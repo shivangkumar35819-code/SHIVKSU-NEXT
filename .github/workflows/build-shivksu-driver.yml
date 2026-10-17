@@ -1,4 +1,4 @@
-name: Build SHIVKSU-NEXT driver
+name: Build SHIVKSU-NEXT drivers
 
 on:
   workflow_dispatch:
@@ -8,12 +8,27 @@ permissions:
 
 jobs:
   build:
+    name: Drivers for ${{ matrix.kmi }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        kmi:
+          - android12-5.10
+          - android13-5.10
+          - android13-5.15
+          - android14-5.15
+          - android14-6.1
+          - android15-6.6
+          - android16-6.12
+          - android17-6.18
     container:
-      image: ghcr.io/ylarod/ddk-min:android15-6.6-20260828
+      image: ghcr.io/ylarod/ddk-min:${{ matrix.kmi }}-20260828
       options: --privileged
     env:
+      KMI: ${{ matrix.kmi }}
       MANAGER_SIZE: '0x4d8'
       MANAGER_HASH: '996ec4da5ac204e00136f0dabf5605d613a9c5ac045514ee2eae266c89b3994a'
       MANAGER_PACKAGE: com.rifsxd.ksunext
@@ -55,7 +70,7 @@ jobs:
           assert 'char cert[CERT_MAX_LENGTH]' not in source
           PY
 
-      - name: Compile ARM64 android15-6.6 driver
+      - name: Compile ARM64 driver
         working-directory: source/kernel
         shell: bash
         run: |
@@ -64,9 +79,14 @@ jobs:
             KSU_NEXT_MANAGER_SIZE="$MANAGER_SIZE" \
             KSU_NEXT_MANAGER_HASH="$MANAGER_HASH" \
             KSU_MANAGER_PACKAGE="$MANAGER_PACKAGE"
-          mkdir -p "$GITHUB_WORKSPACE/out"
+          mkdir -p "$GITHUB_WORKSPACE/out/arm64-v8a"
           llvm-strip -d kernelsu.ko
-          cp kernelsu.ko "$GITHUB_WORKSPACE/out/android15-6.6_SHIVKSU-NEXT_kernelsu.ko"
+          cp kernelsu.ko "$GITHUB_WORKSPACE/out/arm64-v8a/${KMI}_kernelsu.ko"
+
+      - name: Compile x86-64 driver
+        working-directory: source/kernel
+        shell: bash
+        run: bash "$GITHUB_WORKSPACE/build-config/custom-root/build-x86_64.sh"
 
       - name: Verify build identity and checksum
         working-directory: out
@@ -77,27 +97,59 @@ jobs:
           import os
           import re
           from pathlib import Path
-          data = Path('android15-6.6_SHIVKSU-NEXT_kernelsu.ko').read_bytes()
-          assert data[:4] == b'\x7fELF'
-          assert int.from_bytes(data[16:18], 'little') == 1
-          assert int.from_bytes(data[18:20], 'little') == 183
-          assert os.environ['MANAGER_HASH'].encode() in data
-          assert os.environ['MANAGER_PACKAGE'].encode() in data
-          assert b'79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7' not in data
-          print('vermagic:', re.findall(rb'vermagic=([^\x00]+)', data))
+          for abi, machine in [('arm64-v8a', 183), ('x86_64', 62)]:
+              path = Path(abi) / (os.environ['KMI'] + '_kernelsu.ko')
+              data = path.read_bytes()
+              assert data[:4] == b'\x7fELF'
+              assert int.from_bytes(data[16:18], 'little') == 1
+              assert int.from_bytes(data[18:20], 'little') == machine
+              assert os.environ['MANAGER_HASH'].encode() in data
+              assert os.environ['MANAGER_PACKAGE'].encode() in data
+              assert b'79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7' not in data
+              print(path, 'vermagic:', re.findall(rb'vermagic=([^\x00]+)', data))
           PY
-          sha256sum android15-6.6_SHIVKSU-NEXT_kernelsu.ko > SHA256SUMS
+          sha256sum arm64-v8a/*.ko x86_64/*.ko > "SHA256SUMS-${KMI}"
           printf '%s\n' \
             'Built for the existing locally signed SHIVKSU-NEXT 3.4.2 APK.' \
-            'Architecture: ARM64; KMI: android15-6.6.' \
+            "Architectures: ARM64, x86-64; KMI: $KMI." \
             "Manager certificate size: $MANAGER_SIZE" \
             "Manager certificate SHA-256: $MANAGER_HASH" \
             'This artifact has not been tested on a device and is not a flashable boot image.' \
-            'Do not flash a .ko file directly to a partition.' > BUILD-INFO.txt
+            'Do not flash a .ko file directly to a partition.' > "BUILD-INFO-${KMI}.txt"
 
       - name: Save custom driver
         uses: actions/upload-artifact@v4
         with:
-          name: SHIVKSU-NEXT-android15-6.6-driver
+          name: SHIVKSU-NEXT-${{ matrix.kmi }}-drivers
+          path: out/
+          if-no-files-found: error
+
+  collect:
+    name: Collect all supported drivers
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: SHIVKSU-NEXT-*-drivers
+          merge-multiple: true
+          path: out
+      - name: Check all architectures and KMIs are present
+        working-directory: out
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          kmis = ['android12-5.10', 'android13-5.10', 'android13-5.15', 'android14-5.15',
+                  'android14-6.1', 'android15-6.6', 'android16-6.12', 'android17-6.18']
+          for abi in ['arm64-v8a', 'x86_64']:
+              assert sorted(p.name for p in Path(abi).glob('*.ko')) == sorted(k + '_kernelsu.ko' for k in kmis)
+          print('Verified 16 matching drivers across 8 KMIs and 2 architectures')
+          PY
+          for checksums in SHA256SUMS-*; do sha256sum -c "$checksums"; done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SHIVKSU-NEXT-all-supported-drivers
           path: out/
           if-no-files-found: error

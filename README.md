@@ -16,9 +16,11 @@ The connected phone reports Android 15, ARM64, kernel `6.6.118-android15-8-ge56c
 
 `certificate-support.patch` keeps exact certificate-size and SHA-256 checks. It raises the bounded certificate limit to 2048 bytes and reads the certificate into a temporary heap allocation, freeing it on each exit path. It does not increase the kernel stack buffer or disable manager verification.
 
-The manual workflow `.github/workflows/build-shivksu-driver.yml` builds the ARM64 android15-6.6 LKM from upstream commit `4c706b5938665866ebe16944a481a7b91e3396af` with this patch, this APK's public certificate size/hash, and its exact package. The signing keystore remains on the local PC; the workflow does not need it.
+The manual workflow `.github/workflows/build-shivksu-driver.yml` builds ARM64 and x86-64 LKMs from upstream commit `4c706b5938665866ebe16944a481a7b91e3396af` with this patch, this APK's public certificate size/hash, and its exact package. The signing keystore remains on the local PC; the workflow does not need it.
 
-The workflow and patch must be present together in the GitHub repository. Run **Build SHIVKSU-NEXT driver** under Actions to produce the driver artifact. Running the workflow is a build step, not a phone installation.
+Supported build matrix: `android12-5.10`, `android13-5.10`, `android13-5.15`, `android14-5.15`, `android14-6.1`, `android15-6.6`, `android16-6.12`, and `android17-6.18`. Each KMI is compiled for both architectures, giving 16 driver files. This matrix does not establish compatibility with every OEM kernel or add support for 32-bit and non-GKI phones.
+
+The workflow, patch, and `custom-root/build-x86_64.sh` must be present together in the GitHub repository. Run **Build SHIVKSU-NEXT drivers** under Actions to produce `SHIVKSU-NEXT-all-supported-drivers`. Running the workflow is a build step, not a phone installation.
 
 ## Remaining verification
 
