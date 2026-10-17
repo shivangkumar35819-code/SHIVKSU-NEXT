@@ -60,7 +60,7 @@ OUT_DIR="$GITHUB_WORKSPACE/out/x86_64"
 mkdir -p $OUT_DIR
 
 # Copy with KMI-specific naming
-OUTPUT_NAME="$KMI_kernelsu.ko"
+OUTPUT_NAME="${KMI}_kernelsu.ko"
 cp kernelsu.ko "$OUT_DIR/$OUTPUT_NAME"
 
 echo "Copied to: $OUT_DIR/$OUTPUT_NAME"
