@@ -1,0 +1,1274 @@
+--- a/manager/app/build.gradle.kts
++++ b/manager/app/build.gradle.kts
+@@ -68,7 +68,7 @@
+     applicationVariants.all {
+         outputs.forEach {
+             val output = it as BaseVariantOutputImpl
+-            output.outputFileName = "KernelSU_Next_${managerVersionName}_${managerVersionCode}-$name.apk"
++            output.outputFileName = "SHIVKSU-NEXT_${managerVersionName}_${managerVersionCode}-$name.apk"
+         }
+         kotlin.sourceSets {
+             getByName(name) {
+--- a/manager/app/src/main/cpp/CMakeLists.txt
++++ b/manager/app/src/main/cpp/CMakeLists.txt
+@@ -16,7 +16,7 @@
+         ksu.cc
+         )
+ 
+-target_include_directories(kernelsu PRIVATE .)
++target_include_directories(kernelsu PRIVATE . ../../../../..)
+ 
+ find_library(log-lib log)
+ 
+--- a/manager/app/src/main/cpp/jni.cc
++++ b/manager/app/src/main/cpp/jni.cc
+@@ -9,7 +9,7 @@
+ 
+ #include "ksu.h"
+ 
+-#define LOG_TAG "KernelSU-Next"
++#define LOG_TAG "SHIVKSU-NEXT"
+ #ifdef NDEBUG
+ #define LOGD(...) (void)0
+ #else
+--- a/manager/app/src/main/java/com/rifsxd/ksunext/KernelSUApplication.kt
++++ b/manager/app/src/main/java/com/rifsxd/ksunext/KernelSUApplication.kt
+@@ -60,7 +60,7 @@
+                 .addInterceptor { block ->
+                     block.proceed(
+                         block.request().newBuilder()
+-                            .header("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
++                            .header("User-Agent", "SHIVKSU-NEXT/${BuildConfig.VERSION_CODE}")
+                             .header("Accept-Language", Locale.getDefault().toLanguageTag()).build()
+                     )
+                 }.build()
+--- a/manager/app/src/main/java/com/rifsxd/ksunext/ui/screen/ExecuteModuleAction.kt
++++ b/manager/app/src/main/java/com/rifsxd/ksunext/ui/screen/ExecuteModuleAction.kt
+@@ -107,7 +107,7 @@
+                             val date = format.format(Date())
+                             val file = File(
+                                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+-                                "KernelSU_Next_module_action_log_${date}.log"
++                                "SHIVKSU-NEXT_module_action_log_${date}.log"
+                             )
+                             file.writeText(logContent.toString())
+                             snackBarHost.showSnackbar(context.getString(R.string.log_saved_to, BidiFormatter.getInstance().unicodeWrap(file.absolutePath)))
+--- a/manager/app/src/main/java/com/rifsxd/ksunext/ui/screen/Flash.kt
++++ b/manager/app/src/main/java/com/rifsxd/ksunext/ui/screen/Flash.kt
+@@ -202,6 +202,7 @@
+                 }
+                 logContent.append(it).append("\n")
+             }, onStderr = {
++                text += "$it\n"
+                 logContent.append(it).append("\n")
+             }).apply {
+                 if (code != 0) {
+@@ -229,7 +230,7 @@
+                         val date = format.format(Date())
+                         val file = File(
+                             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+-                            "KernelSU_Next_install_log_${date}.log"
++                            "SHIVKSU-NEXT_install_log_${date}.log"
+                         )
+                         file.writeText(logContent.toString())
+                         snackBarHost.showSnackbar(context.getString(R.string.log_saved_to, BidiFormatter.getInstance().unicodeWrap(file.absolutePath)))
+--- a/manager/app/src/main/java/com/rifsxd/ksunext/ui/screen/MetaModule.kt
++++ b/manager/app/src/main/java/com/rifsxd/ksunext/ui/screen/MetaModule.kt
+@@ -135,7 +135,7 @@
+                 val conn = URL(jsonUrl).openConnection() as java.net.HttpURLConnection
+                 conn.connectTimeout = NET_CONNECT_TIMEOUT_MS
+                 conn.readTimeout = NET_READ_TIMEOUT_MS
+-                conn.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
++                conn.setRequestProperty("User-Agent", "SHIVKSU-NEXT/${BuildConfig.VERSION_CODE}")
+                 val text = BufferedReader(InputStreamReader(conn.inputStream)).use { it.readText() }
+                 conn.disconnect()
+ 
+@@ -621,7 +621,7 @@
+                 val htmlConn = URL(repoUrl).openConnection() as java.net.HttpURLConnection
+                 htmlConn.connectTimeout = NET_CONNECT_TIMEOUT_MS
+                 htmlConn.readTimeout = NET_READ_TIMEOUT_MS
+-                htmlConn.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
++                htmlConn.setRequestProperty("User-Agent", "SHIVKSU-NEXT/${BuildConfig.VERSION_CODE}")
+                 htmlConn.setRequestProperty("Accept", "text/html")
+                 val html = BufferedReader(InputStreamReader(htmlConn.inputStream)).use { it.readText() }
+                 htmlConn.disconnect()
+@@ -639,7 +639,7 @@
+             connection.connectTimeout = NET_CONNECT_TIMEOUT_MS
+             connection.readTimeout = NET_READ_TIMEOUT_MS
+             connection.instanceFollowRedirects = false
+-            connection.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
++            connection.setRequestProperty("User-Agent", "SHIVKSU-NEXT/${BuildConfig.VERSION_CODE}")
+ 
+             val redirectUrl = connection.getHeaderField("Location")
+             connection.disconnect()
+@@ -658,7 +658,7 @@
+             val pageConnection = URL(releasePageUrl).openConnection()
+             pageConnection.connectTimeout = NET_CONNECT_TIMEOUT_MS
+             pageConnection.readTimeout = NET_READ_TIMEOUT_MS
+-            pageConnection.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
++            pageConnection.setRequestProperty("User-Agent", "SHIVKSU-NEXT/${BuildConfig.VERSION_CODE}")
+ 
+             val pageHtml = BufferedReader(InputStreamReader(pageConnection.getInputStream())).use {
+                 it.readText()
+--- a/manager/app/src/main/java/com/rifsxd/ksunext/ui/screen/ModuleRepo.kt
++++ b/manager/app/src/main/java/com/rifsxd/ksunext/ui/screen/ModuleRepo.kt
+@@ -180,7 +180,7 @@
+                 val conn = URL(jsonUrl).openConnection() as java.net.HttpURLConnection
+                 conn.connectTimeout = NET_CONNECT_TIMEOUT_MS
+                 conn.readTimeout = NET_READ_TIMEOUT_MS
+-                conn.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
++                conn.setRequestProperty("User-Agent", "SHIVKSU-NEXT/${BuildConfig.VERSION_CODE}")
+                 val text = BufferedReader(InputStreamReader(conn.inputStream)).use { it.readText() }
+                 conn.disconnect()
+ 
+@@ -954,7 +954,7 @@
+                 val htmlConn = URL(repoUrl).openConnection() as java.net.HttpURLConnection
+                 htmlConn.connectTimeout = NET_CONNECT_TIMEOUT_MS
+                 htmlConn.readTimeout = NET_READ_TIMEOUT_MS
+-                htmlConn.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
++                htmlConn.setRequestProperty("User-Agent", "SHIVKSU-NEXT/${BuildConfig.VERSION_CODE}")
+                 htmlConn.setRequestProperty("Accept", "text/html")
+                 val html = BufferedReader(InputStreamReader(htmlConn.inputStream)).use { it.readText() }
+                 htmlConn.disconnect()
+@@ -971,7 +971,7 @@
+             connection.connectTimeout = NET_CONNECT_TIMEOUT_MS
+             connection.readTimeout = NET_READ_TIMEOUT_MS
+             connection.instanceFollowRedirects = false
+-            connection.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
++            connection.setRequestProperty("User-Agent", "SHIVKSU-NEXT/${BuildConfig.VERSION_CODE}")
+ 
+             val redirectUrl = connection.getHeaderField("Location")
+             connection.disconnect()
+@@ -990,7 +990,7 @@
+             val pageConnection = URL(releasePageUrl).openConnection()
+             pageConnection.connectTimeout = NET_CONNECT_TIMEOUT_MS
+             pageConnection.readTimeout = NET_READ_TIMEOUT_MS
+-            pageConnection.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
++            pageConnection.setRequestProperty("User-Agent", "SHIVKSU-NEXT/${BuildConfig.VERSION_CODE}")
+ 
+             val pageHtml = BufferedReader(InputStreamReader(pageConnection.getInputStream())).use {
+                 it.readText()
+--- a/manager/app/src/main/java/com/rifsxd/ksunext/ui/screen/Settings.kt
++++ b/manager/app/src/main/java/com/rifsxd/ksunext/ui/screen/Settings.kt
+@@ -970,7 +970,7 @@
+                     onSave = {
+                         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm")
+                         val current = LocalDateTime.now().format(formatter)
+-                        exportBugreportLauncher.launch("KernelSU_Next_bugreport_${current}.tar.gz")
++                        exportBugreportLauncher.launch("SHIVKSU-NEXT_bugreport_${current}.tar.gz")
+                         showBottomsheet = false
+                     },
+                     onShare = {
+--- /dev/null
++++ b/manager/app/src/main/java/com/rifsxd/ksunext/ui/util/CustomLkm.kt
+@@ -0,0 +1,34 @@
++package com.rifsxd.ksunext.ui.util
++
++import android.os.Build
++import com.rifsxd.ksunext.ksuApp
++import java.io.File
++
++/** Drivers built to trust this manager's signing certificate. */
++internal object CustomLkm {
++    private const val ROOT = "custom-lkm"
++    private const val SUFFIX = "_kernelsu.ko"
++
++    private fun directory() = "$ROOT/${Build.SUPPORTED_ABIS.firstOrNull().orEmpty()}"
++
++    fun isConfigured(): Boolean = !ksuApp.assets.list(ROOT).isNullOrEmpty()
++
++    fun supportedKmis(): List<String> = ksuApp.assets.list(directory()).orEmpty()
++        .filter { it.endsWith(SUFFIX) }
++        .map { it.removeSuffix(SUFFIX) }
++        .sorted()
++
++    fun extract(kmi: String): File {
++        require(kmi in supportedKmis()) { "No matching SHIVKSU-NEXT driver for $kmi" }
++        val file = File.createTempFile("shivksu-lkm-", ".ko", ksuApp.cacheDir)
++        try {
++            ksuApp.assets.open("${directory()}/$kmi$SUFFIX").use { input ->
++                file.outputStream().use { output -> input.copyTo(output) }
++            }
++            return file
++        } catch (error: Exception) {
++            file.delete()
++            throw error
++        }
++    }
++}
+--- a/manager/app/src/main/java/com/rifsxd/ksunext/ui/util/KsuCli.kt
++++ b/manager/app/src/main/java/com/rifsxd/ksunext/ui/util/KsuCli.kt
+@@ -369,6 +369,27 @@
+ ): FlashResult {
+     val resolver = ksuApp.contentResolver
+ 
++    // The daemon's upstream drivers trust a different manager certificate.
++    // Never silently select one when this APK contains its own signed drivers.
++    val customKmi = if (CustomLkm.isConfigured() && lkm !is LkmSelection.LkmUri) {
++        if (ota && lkm == LkmSelection.KmiNone) {
++            val message = ksuApp.getString(R.string.custom_lkm_ota_select_driver)
++            onStderr(message)
++            return FlashResult(1, message, false)
++        }
++        val selectedKmi = if (lkm is LkmSelection.KmiString) {
++            lkm.value
++        } else {
++            ShellUtils.fastCmd("${getKsuDaemonPath()} boot-info current-kmi").trim()
++        }
++        if (selectedKmi !in CustomLkm.supportedKmis()) {
++            val message = ksuApp.getString(R.string.custom_lkm_unavailable, selectedKmi)
++            onStderr(message)
++            return FlashResult(1, message, false)
++        }
++        selectedKmi
++    } else null
++
+     val bootFile = bootUri?.let { uri ->
+         with(resolver.openInputStream(uri)) {
+             val bootFile = File(ksuApp.cacheDir, "boot.img")
+@@ -427,7 +448,21 @@
+         }
+ 
+         LkmSelection.KmiNone -> {
+-            // do nothing
++            if (customKmi != null) {
++                cmd += " --kmi $customKmi"
++            }
++        }
++    }
++
++    if (customKmi != null) {
++        try {
++            lkmFile = CustomLkm.extract(customKmi)
++            cmd += " -m ${lkmFile.absolutePath}"
++        } catch (error: Exception) {
++            bootFile?.delete()
++            val message = ksuApp.getString(R.string.custom_lkm_prepare_failed, error.message.orEmpty())
++            onStderr(message)
++            return FlashResult(1, message, false)
+         }
+     }
+ 
+@@ -436,11 +471,13 @@
+         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+     cmd += " -o $downloadsDir"
+ 
+-    val result = flashWithIO("${getKsuDaemonPath()} $cmd", onStdout, onStderr)
++    val result = try {
++        flashWithIO("${getKsuDaemonPath()} $cmd", onStdout, onStderr)
++    } finally {
++        bootFile?.delete()
++        lkmFile?.delete()
++    }
+     Log.i("KernelSU", "install boot result: ${result.isSuccess}")
+-
+-    bootFile?.delete()
+-    lkmFile?.delete()
+ 
+     // if boot uri is empty, it is direct install, when success, we should show reboot button
+     return FlashResult(result, bootUri == null && result.isSuccess)
+@@ -535,6 +572,7 @@
+ }
+ 
+ suspend fun getSupportedKmis(): List<String> = withContext(Dispatchers.IO) {
++    if (CustomLkm.isConfigured()) return@withContext CustomLkm.supportedKmis()
+     val cmd = "boot-info supported-kmis"
+     val out = Shell.cmd("${getKsuDaemonPath()} $cmd").to(ArrayList(), null).exec().out
+     out.filter { it.isNotBlank() }.map { it.trim() }
+@@ -790,4 +828,4 @@
+         .start()
+     process.inputStream.bufferedReader().readText()
+     return process.waitFor() == 0
+-}+}
+--- a/manager/app/src/main/java/com/rifsxd/ksunext/ui/util/LogEvent.kt
++++ b/manager/app/src/main/java/com/rifsxd/ksunext/ui/util/LogEvent.kt
+@@ -107,7 +107,7 @@
+     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm")
+     val current = LocalDateTime.now().format(formatter)
+ 
+-    val targetFile = File(context.cacheDir, "KernelSU_Next_bugreport_${current}.tar.gz")
++    val targetFile = File(context.cacheDir, "SHIVKSU-NEXT_bugreport_${current}.tar.gz")
+ 
+     Shell.cmd("tar czf ${targetFile.absolutePath} -C ${bugreportDir.absolutePath} .").exec()
+     Shell.cmd("rm -rf ${bugreportDir.absolutePath}").exec()
+@@ -155,7 +155,7 @@
+     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm")
+     val current = LocalDateTime.now().format(formatter)
+ 
+-    val targetFile = File(context.cacheDir, "KernelSU_Next_bugreport_${current}.tar.gz")
++    val targetFile = File(context.cacheDir, "SHIVKSU-NEXT_bugreport_${current}.tar.gz")
+ 
+     nonRootShell("tar czf ${targetFile.absolutePath} -C ${bugreportDir.absolutePath} .")
+     nonRootShell("rm -rf ${bugreportDir.absolutePath}")
+--- a/manager/app/src/main/res/values/strings.xml
++++ b/manager/app/src/main/res/values/strings.xml
+@@ -8,7 +8,7 @@
+     <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
+     <string name="issue_report_telegram_link">https://t.me/ksunext</string>
+     <string name="confirm">Confirm</string>
+-    <string name="app_name" translatable="false">KernelSU-Next</string>
++    <string name="app_name" translatable="false">SHIVKSU-NEXT</string>
+     <string name="home">Home</string>
+     <string name="home_not_installed">Not installed</string>
+     <string name="home_click_to_install">Click to install</string>
+@@ -16,7 +16,7 @@
+     <string name="home_working_version">Version: %1$s (%2$s)</string>
+     <string name="home_module_update_count">Updates: %d</string>
+     <string name="home_failure">Unsupported | Not integrated</string>
+-    <string name="home_failure_tip">Non-GKI kernels are not supported. Integrate KernelSU-Next legacy driver in your kernel!</string>
++    <string name="home_failure_tip">Non-GKI kernels are not supported. Integrate SHIVKSU-NEXT legacy driver in your kernel!</string>
+     <string name="home_kernel">Kernel version</string>
+     <string name="hook_mode">Hook mode</string>
+     <string name="enable">Enable</string>
+@@ -129,7 +129,7 @@
+     <string name="failed_to_update_app_profile">Failed to update App Profile for %s</string>
+     <string name="settings_umount_modules_default">Umount modules</string>
+     <string name="settings_umount_modules_default_summary">The global default value for \"Umount modules\" in App Profile. If enabled, it will remove all module modifications to the system for apps that don\'t have a profile set.</string>
+-    <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU-Next to restore any modified files by the modules for this app.</string>
++    <string name="profile_umount_modules_summary">Enabling this option will allow SHIVKSU-NEXT to restore any modified files by the modules for this app.</string>
+     <string name="profile_selinux_domain">Domain</string>
+     <string name="profile_selinux_rules">Rules</string>
+     <string name="profile_flags">Flags</string>
+@@ -213,9 +213,9 @@
+     <string name="settings_uninstall_temporary">Uninstall temporarily</string>
+     <string name="settings_uninstall_permanent">Uninstall permanently</string>
+     <string name="settings_restore_stock_image">Restore stock image</string>
+-    <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
+-    <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
+-    <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU-Next, please use \"Uninstall permanently\".</string>
++    <string name="settings_uninstall_temporary_message">Temporarily uninstall SHIVKSU-NEXT, restore to original state after next reboot.</string>
++    <string name="settings_uninstall_permanent_message">Uninstalling SHIVKSU-NEXT (root and all modules) completely and permanently.</string>
++    <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall SHIVKSU-NEXT, please use \"Uninstall permanently\".</string>
+     <string name="flashing">Flashing</string>
+     <string name="flash_success">Flash success</string>
+     <string name="flash_failed">Flash failed</string>
+@@ -335,8 +335,8 @@
+     <string name="sulog_status_exit">Exit %1$d</string>
+     <string name="home_lkm_update_available">A newer bundled LKM is available. Tap to update.</string>
+     <string name="home_lkm_custom">Custom</string>
+-    <string name="require_manager_version">The current KernelSU-Next manager version %1$d is too low for KernelSU-Next to work properly. Please upgrade manager to version %2$d or higher!</string>
+-    <string name="require_kernel_version">The current KernelSU-Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
++    <string name="require_manager_version">The current SHIVKSU-NEXT manager version %1$d is too low for SHIVKSU-NEXT to work properly. Please upgrade manager to version %2$d or higher!</string>
++    <string name="require_kernel_version">The current SHIVKSU-NEXT version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
+     <string name="require_kernel_version_gki">Kernel update required</string>
+     <string name="settings_app_lock">App lock</string>
+     <string name="settings_app_lock_summary">Require authentication when opening the app.</string>
+@@ -375,4 +375,7 @@
+     <string name="module_unknown">Unknown Module</string>
+     <string name="template_example_title">Example</string>
+     <string name="template_example_description">This is an example template</string>
++    <string name="custom_lkm_unavailable">This build does not include a compatible driver for %1$s. Select a matching driver file.</string>
++    <string name="custom_lkm_ota_select_driver">For an OTA slot, select a driver file that matches the updated kernel.</string>
++    <string name="custom_lkm_prepare_failed">Could not prepare the SHIVKSU-NEXT driver: %1$s</string>
+ </resources>
+--- a/manager/app/src/main/res/values-ar-rSA/strings.xml
++++ b/manager/app/src/main/res/values-ar-rSA/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">يعمل</string>
+   <string name="home_module_update_count">تحديثات: %d</string>
+   <string name="home_failure">غير مدعوم | غير مدمج</string>
+-  <string name="home_failure_tip">نواة غير GKI غير مدعومة. ادمج نواة KernelSU-Next القديمة في النواة الخاصة بك!</string>
++  <string name="home_failure_tip">نواة غير GKI غير مدعومة. ادمج نواة SHIVKSU-NEXT القديمة في النواة الخاصة بك!</string>
+   <string name="home_kernel">إصدار النواة</string>
+   <string name="hook_mode">وضع الارتباط</string>
+   <string name="enable">مفعل</string>
+@@ -237,12 +237,12 @@
+   <string name="settings_enable_avc_spoof">تزييف AVC</string>
+   <string name="settings_enable_avc_spoof_summary">إصلاح تسرب سياق selinux بسبب سجل المرفوضات في سجل المراجعة.</string>
+   <string name="manage_repositories">إدارة المستودعات</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">إصدار KernelSU-Next الحالي %1$d قليل جدا لكي يعمل التطبيق بشكل صحيح. يرجي التطوير الي اصدار %2$d أو اعلي!</string>
+-  <string name="profile_umount_modules_summary">سيؤدي تمكين هذا الخِيار إلى السماح لـ KernelSU-Next باستعادة أي ملفات تم تعديلها بواسطة الوحدات لهذا التطبيق.</string>
+-  <string name="settings_uninstall_temporary_message">إلغاء تثبيت KernelSU-Next مؤقتا، واستعادة الحالة الأصلية بعد إعادة التشغيل التالية.</string>
+-  <string name="settings_uninstall_permanent_message">إلغاء تثبيت KernelSU-Next (الروت وجميع الإضافات) بشكل كامل ودائم.</string>
+-  <string name="settings_restore_stock_image_message">استعادة نسخة المصنع الأصلية (إذا كانت هناك نسخة احتياطية)، تستخدم عادة قبل تحديثات النظام الهوائية (OTA)؛ إذا كنت بحاجة إلى إلغاء تثبيت KernelSU Next، فيرجى استخدام \"إلغاء التثبيت بشكل دائم\".</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">إصدار SHIVKSU-NEXT الحالي %1$d قليل جدا لكي يعمل التطبيق بشكل صحيح. يرجي التطوير الي اصدار %2$d أو اعلي!</string>
++  <string name="profile_umount_modules_summary">سيؤدي تمكين هذا الخِيار إلى السماح لـ SHIVKSU-NEXT باستعادة أي ملفات تم تعديلها بواسطة الوحدات لهذا التطبيق.</string>
++  <string name="settings_uninstall_temporary_message">إلغاء تثبيت SHIVKSU-NEXT مؤقتا، واستعادة الحالة الأصلية بعد إعادة التشغيل التالية.</string>
++  <string name="settings_uninstall_permanent_message">إلغاء تثبيت SHIVKSU-NEXT (الروت وجميع الإضافات) بشكل كامل ودائم.</string>
++  <string name="settings_restore_stock_image_message">استعادة نسخة المصنع الأصلية (إذا كانت هناك نسخة احتياطية)، تستخدم عادة قبل تحديثات النظام الهوائية (OTA)؛ إذا كنت بحاجة إلى إلغاء تثبيت SHIVKSU-NEXT، فيرجى استخدام \"إلغاء التثبيت بشكل دائم\".</string>
+   <string name="backup_success">اكتمل النسخ الاحتياطي بنجاح</string>
+   <string name="backup_failed">فشل النسخ الاحتياطي</string>
+   <string name="restore_success">اكتملت الاستعادة بنجاح</string>
+@@ -290,7 +290,7 @@
+   <string name="sulog_entry_description_ioctl_grant_root">Granted root access via KernelSU ioctl</string>
+   <string name="sulog_entry_title_daemon_restarted">Daemon restarted</string>
+   <string name="sulog_entry_title_dropped_events">Dropped events</string>
+-  <string name="require_manager_version">The current KernelSU-Next manager version %1$d is too low for KernelSU-Next to work properly. Please upgrade manager to version %2$d or higher!</string>
++  <string name="require_manager_version">The current SHIVKSU-NEXT manager version %1$d is too low for SHIVKSU-NEXT to work properly. Please upgrade manager to version %2$d or higher!</string>
+   <string name="profile_flags">Flags</string>
+   <string name="profile_flags_desc_no_new_privs">Prevent further privilege escalation via KernelSU from within the context of this root profile.</string>
+   <string name="settings_sulog">SU Log</string>
+--- a/manager/app/src/main/res/values-bg-rBG/strings.xml
++++ b/manager/app/src/main/res/values-bg-rBG/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">Working</string>
+   <string name="home_module_update_count">Updates: %d</string>
+   <string name="home_failure">Unsupported | Not integrated</string>
+-  <string name="home_failure_tip">Non-GKI kernels are not supported. Integrate KernelSU-Next legacy driver in your kernel!</string>
++  <string name="home_failure_tip">Non-GKI kernels are not supported. Integrate SHIVKSU-NEXT legacy driver in your kernel!</string>
+   <string name="home_kernel"></string>
+   <string name="hook_mode">Hook mode</string>
+   <string name="enable">Enable</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">AVC spoofing</string>
+   <string name="settings_enable_avc_spoof_summary">Fix selinux context leak caused by avc denial in audit log.</string>
+   <string name="manage_repositories">Manage Repositories</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">The current KernelSU-Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
+-  <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU-Next to restore any modified files by the modules for this app.</string>
+-  <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
+-  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
+-  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU-Next, please use \"Uninstall permanently\".</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">The current SHIVKSU-NEXT version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
++  <string name="profile_umount_modules_summary">Enabling this option will allow SHIVKSU-NEXT to restore any modified files by the modules for this app.</string>
++  <string name="settings_uninstall_temporary_message">Temporarily uninstall SHIVKSU-NEXT, restore to original state after next reboot.</string>
++  <string name="settings_uninstall_permanent_message">Uninstalling SHIVKSU-NEXT (root and all modules) completely and permanently.</string>
++  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall SHIVKSU-NEXT, please use \"Uninstall permanently\".</string>
+   <string name="backup_success">Backup completed successfully</string>
+   <string name="backup_failed">Backup failed</string>
+   <string name="restore_success">Restore completed successfully</string>
+@@ -288,7 +288,7 @@
+   <string name="sulog_entry_description_ioctl_grant_root">Granted root access via KernelSU ioctl</string>
+   <string name="sulog_entry_title_daemon_restarted">Daemon restarted</string>
+   <string name="sulog_entry_title_dropped_events">Dropped events</string>
+-  <string name="require_manager_version">The current KernelSU-Next manager version %1$d is too low for KernelSU-Next to work properly. Please upgrade manager to version %2$d or higher!</string>
++  <string name="require_manager_version">The current SHIVKSU-NEXT manager version %1$d is too low for SHIVKSU-NEXT to work properly. Please upgrade manager to version %2$d or higher!</string>
+   <string name="profile_flags">Flags</string>
+   <string name="profile_flags_desc_no_new_privs">Prevent further privilege escalation via KernelSU from within the context of this root profile.</string>
+   <string name="settings_sulog">SU Log</string>
+--- a/manager/app/src/main/res/values-bn-rBD/strings.xml
++++ b/manager/app/src/main/res/values-bn-rBD/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">কার্যরত</string>
+   <string name="home_module_update_count">আপডেটস: %d</string>
+   <string name="home_failure">অসমর্থিত | ইন্টিগ্রেটেড নয়</string>
+-  <string name="home_failure_tip">Non-GKI কার্নেলগুলি সমর্থিত নয়। আপনার কার্নেলে KernelSU-Next লিগ্যাসি ড্রাইভার সমন্বিত করুন!</string>
++  <string name="home_failure_tip">Non-GKI কার্নেলগুলি সমর্থিত নয়। আপনার কার্নেলে SHIVKSU-NEXT লিগ্যাসি ড্রাইভার সমন্বিত করুন!</string>
+   <string name="home_kernel">কার্নেল সংস্করণ</string>
+   <string name="hook_mode">হুক মোড</string>
+   <string name="enable">সক্রিয়</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">AVC spoofing</string>
+   <string name="settings_enable_avc_spoof_summary">Fix selinux context leak caused by avc denial in audit log.</string>
+   <string name="manage_repositories">Manage Repositories</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">The current KernelSU-Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
+-  <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU-Next to restore any modified files by the modules for this app.</string>
+-  <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
+-  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
+-  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU-Next, please use \"Uninstall permanently\".</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">The current SHIVKSU-NEXT version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
++  <string name="profile_umount_modules_summary">Enabling this option will allow SHIVKSU-NEXT to restore any modified files by the modules for this app.</string>
++  <string name="settings_uninstall_temporary_message">Temporarily uninstall SHIVKSU-NEXT, restore to original state after next reboot.</string>
++  <string name="settings_uninstall_permanent_message">Uninstalling SHIVKSU-NEXT (root and all modules) completely and permanently.</string>
++  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall SHIVKSU-NEXT, please use \"Uninstall permanently\".</string>
+   <string name="backup_success">Backup completed successfully</string>
+   <string name="backup_failed">Backup failed</string>
+   <string name="restore_success">Restore completed successfully</string>
+@@ -288,7 +288,7 @@
+   <string name="sulog_entry_description_ioctl_grant_root">Granted root access via KernelSU ioctl</string>
+   <string name="sulog_entry_title_daemon_restarted">Daemon restarted</string>
+   <string name="sulog_entry_title_dropped_events">Dropped events</string>
+-  <string name="require_manager_version">The current KernelSU-Next manager version %1$d is too low for KernelSU-Next to work properly. Please upgrade manager to version %2$d or higher!</string>
++  <string name="require_manager_version">The current SHIVKSU-NEXT manager version %1$d is too low for SHIVKSU-NEXT to work properly. Please upgrade manager to version %2$d or higher!</string>
+   <string name="profile_flags">Flags</string>
+   <string name="profile_flags_desc_no_new_privs">Prevent further privilege escalation via KernelSU from within the context of this root profile.</string>
+   <string name="settings_sulog">SU Log</string>
+--- a/manager/app/src/main/res/values-de-rDE/strings.xml
++++ b/manager/app/src/main/res/values-de-rDE/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">Arbeitet</string>
+   <string name="home_module_update_count">Aktualisierungen: %d</string>
+   <string name="home_failure">Nicht unterstützt | Nicht integriert</string>
+-  <string name="home_failure_tip">Non-GKI Kernel sind nicht unterstützt. Bitte integriere die KernelSU-Next legacy Treiber in deinen Kernel!</string>
++  <string name="home_failure_tip">Non-GKI Kernel sind nicht unterstützt. Bitte integriere die SHIVKSU-NEXT legacy Treiber in deinen Kernel!</string>
+   <string name="home_kernel">Kernel-Version</string>
+   <string name="hook_mode">Einbindungs-Modus</string>
+   <string name="enable">Aktivieren</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">AVC-Vortäuschung</string>
+   <string name="settings_enable_avc_spoof_summary">Fix SELinux Kontext Leck, verursacht durch AVC-Ablehnung im Audit-Log.</string>
+   <string name="manage_repositories">Repositories verwalten</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">Die aktuelle KernelSU-Next-Version %1$d ist zu niedrig, als dass der Manager ordnungsgemäß funktioniert. Bitte aktualisieren Sie auf Version %2$d oder höher!</string>
+-  <string name="profile_umount_modules_summary">Wenn Sie diese Option aktivieren, kann KernelSU-Next alle von den Modulen für diese Anwendung geänderten Dateien wiederherstellen.</string>
+-  <string name="settings_uninstall_temporary_message">Vorübergehende Deinstallation von KernelSU-Next, Wiederherstellung des ursprünglichen Zustands nach dem nächsten Neustart.</string>
+-  <string name="settings_uninstall_permanent_message">KernelSU-Next (Root und alle Module) vollständig und dauerhaft deinstallieren.</string>
+-  <string name="settings_restore_stock_image_message">Stellen Sie das Werksabbild wieder her (wenn ein Backup vorhanden ist), das normalerweise vor dem OTA verwendet wurde; Wenn Sie KernelSU-Next deinstallieren müssen, verwenden Sie bitte „Dauerhaft deinstallieren“.</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">Die aktuelle SHIVKSU-NEXT-Version %1$d ist zu niedrig, als dass der Manager ordnungsgemäß funktioniert. Bitte aktualisieren Sie auf Version %2$d oder höher!</string>
++  <string name="profile_umount_modules_summary">Wenn Sie diese Option aktivieren, kann SHIVKSU-NEXT alle von den Modulen für diese Anwendung geänderten Dateien wiederherstellen.</string>
++  <string name="settings_uninstall_temporary_message">Vorübergehende Deinstallation von SHIVKSU-NEXT, Wiederherstellung des ursprünglichen Zustands nach dem nächsten Neustart.</string>
++  <string name="settings_uninstall_permanent_message">SHIVKSU-NEXT (Root und alle Module) vollständig und dauerhaft deinstallieren.</string>
++  <string name="settings_restore_stock_image_message">Stellen Sie das Werksabbild wieder her (wenn ein Backup vorhanden ist), das normalerweise vor dem OTA verwendet wurde; Wenn Sie SHIVKSU-NEXT deinstallieren müssen, verwenden Sie bitte „Dauerhaft deinstallieren“.</string>
+   <string name="backup_success">Sicherung erfolgreich abgeschlossen</string>
+   <string name="backup_failed">Sicherung fehlgeschlagen</string>
+   <string name="restore_success">Wiederherstellung erfolgreich abgeschlossen</string>
+@@ -288,7 +288,7 @@
+   <string name="sulog_entry_description_ioctl_grant_root">root-Zugriff über KernelSU ioctl gewährt</string>
+   <string name="sulog_entry_title_daemon_restarted">Daemon neu gestartet</string>
+   <string name="sulog_entry_title_dropped_events">Verworfene Ereignisse</string>
+-  <string name="require_manager_version">Die aktuelle KernelSU-Next Manager-Version %1$d ist zu niedrig für KernelSU-Next um richtig zu funktionieren. Bitte aktualisieren Sie den Manager auf Version %2$d oder höher!</string>
++  <string name="require_manager_version">Die aktuelle SHIVKSU-NEXT Manager-Version %1$d ist zu niedrig für SHIVKSU-NEXT um richtig zu funktionieren. Bitte aktualisieren Sie den Manager auf Version %2$d oder höher!</string>
+   <string name="profile_flags">Attribute</string>
+   <string name="profile_flags_desc_no_new_privs">Verhindere eine weitere Privilegienerweiterung über KernelSU im Kontext dieses root-Profils.</string>
+   <string name="settings_sulog">SU-Log</string>
+--- a/manager/app/src/main/res/values-es-rEM/strings.xml
++++ b/manager/app/src/main/res/values-es-rEM/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">Funcionando</string>
+   <string name="home_module_update_count">Actualizaciones: %d</string>
+   <string name="home_failure">No compatible | No integrado</string>
+-  <string name="home_failure_tip">Los kernels que no sean GKI no son compatibles. ¡Integre el controlador heredado KernelSU-Next en su kernel!</string>
++  <string name="home_failure_tip">Los kernels que no sean GKI no son compatibles. ¡Integre el controlador heredado SHIVKSU-NEXT en su kernel!</string>
+   <string name="home_kernel">Versión del kernel</string>
+   <string name="hook_mode">Método de intercepción</string>
+   <string name="enable">Activar</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">Suplantación de AVC</string>
+   <string name="settings_enable_avc_spoof_summary">Se soluciona la fuga de contenido de Selinux causada por la denegación de Avc en el registro de auditoría.</string>
+   <string name="manage_repositories">Gestionar repositorios</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">La versión actual de KernelSU-Next %1$d es demasiado baja para que el administrador funcione correctamente. ¡Actualice a la versión %2$d o superior!</string>
+-  <string name="profile_umount_modules_summary">Activar esta opción permitirá a KernelSU Next restaurar cualquier archivo modificado por los módulos para esta apliacion.</string>
+-  <string name="settings_uninstall_temporary_message">Desinstalar temporalmente KernelSU Next, restaurar al estado original después del próximo reinicio.</string>
+-  <string name="settings_uninstall_permanent_message">Desinstalar KernelSU Next (root y todos los módulos) de forma completa y permanente.</string>
+-  <string name="settings_restore_stock_image_message">Restaurar la imagen de fábrica original (si existe una copia de seguridad), que suele utilizarse antes de una OTA; si necesita desinstalar KernelSU Next, utilice «Desinstalar permanentemente».</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">La versión actual de SHIVKSU-NEXT %1$d es demasiado baja para que el administrador funcione correctamente. ¡Actualice a la versión %2$d o superior!</string>
++  <string name="profile_umount_modules_summary">Activar esta opción permitirá a SHIVKSU-NEXT restaurar cualquier archivo modificado por los módulos para esta apliacion.</string>
++  <string name="settings_uninstall_temporary_message">Desinstalar temporalmente SHIVKSU-NEXT, restaurar al estado original después del próximo reinicio.</string>
++  <string name="settings_uninstall_permanent_message">Desinstalar SHIVKSU-NEXT (root y todos los módulos) de forma completa y permanente.</string>
++  <string name="settings_restore_stock_image_message">Restaurar la imagen de fábrica original (si existe una copia de seguridad), que suele utilizarse antes de una OTA; si necesita desinstalar SHIVKSU-NEXT, utilice «Desinstalar permanentemente».</string>
+   <string name="backup_success">Copia de seguridad completada con éxito</string>
+   <string name="backup_failed">Copia de seguridad fallida</string>
+   <string name="restore_success">Restauración completada exitosamente</string>
+--- a/manager/app/src/main/res/values-fa-rIR/strings.xml
++++ b/manager/app/src/main/res/values-fa-rIR/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">درحال انجام</string>
+   <string name="home_module_update_count">به روزرسانی ها: %d</string>
+   <string name="home_failure">پشتیبانی نشده | ادغام نشده</string>
+-  <string name="home_failure_tip">کرنل‌های غیر GKI پشتیبانی نمی شوند. درایور KernelSU-Next Legacy را در کرنل خود ادغام کنید!</string>
++  <string name="home_failure_tip">کرنل‌های غیر GKI پشتیبانی نمی شوند. درایور SHIVKSU-NEXT Legacy را در کرنل خود ادغام کنید!</string>
+   <string name="home_kernel">نگارش کرنل</string>
+   <string name="hook_mode">حالت هوک</string>
+   <string name="enable">فعال</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">جعل AVC</string>
+   <string name="settings_enable_avc_spoof_summary">رفع نشت Context مربوط به Selinux که بر اثر Avc denial در گزارش Audit ایجاد میشود.</string>
+   <string name="manage_repositories">مدیریت مخازن</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">نسخه فعلی KernelSU-Next %1$d برای عملکرد صحیح مدیریت، بسیار ضعیف است. لطفاً به نسخه %2$d یا بالاتر ارتقا دهید!</string>
+-  <string name="profile_umount_modules_summary">فعال کردن این گزینه به KernelSU-Next اجازه می‌دهد تا هرگونه فایل تغییر یافته توسط ماژول‌های این برنامه را بازیابی کند.</string>
+-  <string name="settings_uninstall_temporary_message">KernelSU-Next را موقتاً حذف نصب کنید، سپس پس از راه‌اندازی مجدد بعدی، سیستم را به حالت اولیه بازگردانید.</string>
+-  <string name="settings_uninstall_permanent_message">حذف کامل و دائمی KernelSU-Next (روت و تمام ماژول‌ها).</string>
+-  <string name="settings_restore_stock_image_message">بازیابی فایل ایمیج استاک کارخانه (در صورت وجود نسخه پشتیبان) که معمولاً قبل از OTA استفاده می‌شود؛ اگر نیاز به حذف نصب KernelSU-Next دارید، لطفاً از گزینه «حذف دائمی» استفاده کنید.</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">نسخه فعلی SHIVKSU-NEXT %1$d برای عملکرد صحیح مدیریت، بسیار ضعیف است. لطفاً به نسخه %2$d یا بالاتر ارتقا دهید!</string>
++  <string name="profile_umount_modules_summary">فعال کردن این گزینه به SHIVKSU-NEXT اجازه می‌دهد تا هرگونه فایل تغییر یافته توسط ماژول‌های این برنامه را بازیابی کند.</string>
++  <string name="settings_uninstall_temporary_message">SHIVKSU-NEXT را موقتاً حذف نصب کنید، سپس پس از راه‌اندازی مجدد بعدی، سیستم را به حالت اولیه بازگردانید.</string>
++  <string name="settings_uninstall_permanent_message">حذف کامل و دائمی SHIVKSU-NEXT (روت و تمام ماژول‌ها).</string>
++  <string name="settings_restore_stock_image_message">بازیابی فایل ایمیج استاک کارخانه (در صورت وجود نسخه پشتیبان) که معمولاً قبل از OTA استفاده می‌شود؛ اگر نیاز به حذف نصب SHIVKSU-NEXT دارید، لطفاً از گزینه «حذف دائمی» استفاده کنید.</string>
+   <string name="backup_success">پشتیبان‌گیری با موفقیت انجام شد</string>
+   <string name="backup_failed">پشتیبان‌گیری ناموفق بود</string>
+   <string name="restore_success">بازیابی با موفقیت انجام شد</string>
+--- a/manager/app/src/main/res/values-fr-rFR/strings.xml
++++ b/manager/app/src/main/res/values-fr-rFR/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">En fonctionnement</string>
+   <string name="home_module_update_count">Mises à jour : %d</string>
+   <string name="home_failure">Non pris en charge | Non-intégré</string>
+-  <string name="home_failure_tip">Les noyaux non-GKI ne sont pas pris en charge. Intégrez le pilote KernelSU-Next dans votre noyau !</string>
++  <string name="home_failure_tip">Les noyaux non-GKI ne sont pas pris en charge. Intégrez le pilote SHIVKSU-NEXT dans votre noyau !</string>
+   <string name="home_kernel">Version du noyau</string>
+   <string name="hook_mode">Méthode d\'intégration</string>
+   <string name="enable">Activer</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">AVC spoofing</string>
+   <string name="settings_enable_avc_spoof_summary">Fix selinux context leak caused by avc denial in audit log.</string>
+   <string name="manage_repositories">Manage Repositories</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">The current KernelSU-Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
+-  <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU-Next to restore any modified files by the modules for this app.</string>
+-  <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
+-  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
+-  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU-Next, please use \"Uninstall permanently\".</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">The current SHIVKSU-NEXT version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
++  <string name="profile_umount_modules_summary">Enabling this option will allow SHIVKSU-NEXT to restore any modified files by the modules for this app.</string>
++  <string name="settings_uninstall_temporary_message">Temporarily uninstall SHIVKSU-NEXT, restore to original state after next reboot.</string>
++  <string name="settings_uninstall_permanent_message">Uninstalling SHIVKSU-NEXT (root and all modules) completely and permanently.</string>
++  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall SHIVKSU-NEXT, please use \"Uninstall permanently\".</string>
+   <string name="backup_success">Backup completed successfully</string>
+   <string name="backup_failed">Backup failed</string>
+   <string name="restore_success">Restore completed successfully</string>
+@@ -288,7 +288,7 @@
+   <string name="sulog_entry_description_ioctl_grant_root">Granted root access via KernelSU ioctl</string>
+   <string name="sulog_entry_title_daemon_restarted">Daemon restarted</string>
+   <string name="sulog_entry_title_dropped_events">Dropped events</string>
+-  <string name="require_manager_version">The current KernelSU-Next manager version %1$d is too low for KernelSU-Next to work properly. Please upgrade manager to version %2$d or higher!</string>
++  <string name="require_manager_version">The current SHIVKSU-NEXT manager version %1$d is too low for SHIVKSU-NEXT to work properly. Please upgrade manager to version %2$d or higher!</string>
+   <string name="profile_flags">Flags</string>
+   <string name="profile_flags_desc_no_new_privs">Prevent further privilege escalation via KernelSU from within the context of this root profile.</string>
+   <string name="settings_sulog">SU Log</string>
+--- a/manager/app/src/main/res/values-hi-rIN/strings.xml
++++ b/manager/app/src/main/res/values-hi-rIN/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">कार्यरत</string>
+   <string name="home_module_update_count">Updates: %d</string>
+   <string name="home_failure">Unsupported | Not integrated</string>
+-  <string name="home_failure_tip">Non-GKI kernels are not supported. Integrate KernelSU-Next legacy driver in your kernel!</string>
++  <string name="home_failure_tip">Non-GKI kernels are not supported. Integrate SHIVKSU-NEXT legacy driver in your kernel!</string>
+   <string name="home_kernel">Kernel version</string>
+   <string name="hook_mode">Hook mode</string>
+   <string name="enable">Enable</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">AVC spoofing</string>
+   <string name="settings_enable_avc_spoof_summary">Fix selinux context leak caused by avc denial in audit log.</string>
+   <string name="manage_repositories">Manage Repositories</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">The current KernelSU-Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
+-  <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU-Next to restore any modified files by the modules for this app.</string>
+-  <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
+-  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
+-  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU-Next, please use \"Uninstall permanently\".</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">The current SHIVKSU-NEXT version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
++  <string name="profile_umount_modules_summary">Enabling this option will allow SHIVKSU-NEXT to restore any modified files by the modules for this app.</string>
++  <string name="settings_uninstall_temporary_message">Temporarily uninstall SHIVKSU-NEXT, restore to original state after next reboot.</string>
++  <string name="settings_uninstall_permanent_message">Uninstalling SHIVKSU-NEXT (root and all modules) completely and permanently.</string>
++  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall SHIVKSU-NEXT, please use \"Uninstall permanently\".</string>
+   <string name="backup_success">Backup completed successfully</string>
+   <string name="backup_failed">Backup failed</string>
+   <string name="restore_success">Restore completed successfully</string>
+@@ -288,7 +288,7 @@
+   <string name="sulog_entry_description_ioctl_grant_root">Granted root access via KernelSU ioctl</string>
+   <string name="sulog_entry_title_daemon_restarted">Daemon restarted</string>
+   <string name="sulog_entry_title_dropped_events">Dropped events</string>
+-  <string name="require_manager_version">The current KernelSU-Next manager version %1$d is too low for KernelSU-Next to work properly. Please upgrade manager to version %2$d or higher!</string>
++  <string name="require_manager_version">The current SHIVKSU-NEXT manager version %1$d is too low for SHIVKSU-NEXT to work properly. Please upgrade manager to version %2$d or higher!</string>
+   <string name="profile_flags">Flags</string>
+   <string name="profile_flags_desc_no_new_privs">Prevent further privilege escalation via KernelSU from within the context of this root profile.</string>
+   <string name="settings_sulog">SU Log</string>
+--- a/manager/app/src/main/res/values-hu-rHU/strings.xml
++++ b/manager/app/src/main/res/values-hu-rHU/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">Working</string>
+   <string name="home_module_update_count">Updates: %d</string>
+   <string name="home_failure">Unsupported | Not integrated</string>
+-  <string name="home_failure_tip">Non-GKI kernels are not supported. Integrate KernelSU-Next legacy driver in your kernel!</string>
++  <string name="home_failure_tip">Non-GKI kernels are not supported. Integrate SHIVKSU-NEXT legacy driver in your kernel!</string>
+   <string name="home_kernel">Kernel version</string>
+   <string name="hook_mode">Hook mode</string>
+   <string name="enable">Enable</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">AVC spoofing</string>
+   <string name="settings_enable_avc_spoof_summary">Fix selinux context leak caused by avc denial in audit log.</string>
+   <string name="manage_repositories">Manage Repositories</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">The current KernelSU-Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
+-  <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU-Next to restore any modified files by the modules for this app.</string>
+-  <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
+-  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
+-  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU-Next, please use \"Uninstall permanently\".</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">The current SHIVKSU-NEXT version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
++  <string name="profile_umount_modules_summary">Enabling this option will allow SHIVKSU-NEXT to restore any modified files by the modules for this app.</string>
++  <string name="settings_uninstall_temporary_message">Temporarily uninstall SHIVKSU-NEXT, restore to original state after next reboot.</string>
++  <string name="settings_uninstall_permanent_message">Uninstalling SHIVKSU-NEXT (root and all modules) completely and permanently.</string>
++  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall SHIVKSU-NEXT, please use \"Uninstall permanently\".</string>
+   <string name="backup_success">Backup completed successfully</string>
+   <string name="backup_failed">Backup failed</string>
+   <string name="restore_success">Restore completed successfully</string>
+@@ -288,7 +288,7 @@
+   <string name="sulog_entry_description_ioctl_grant_root">Granted root access via KernelSU ioctl</string>
+   <string name="sulog_entry_title_daemon_restarted">Daemon restarted</string>
+   <string name="sulog_entry_title_dropped_events">Dropped events</string>
+-  <string name="require_manager_version">The current KernelSU-Next manager version %1$d is too low for KernelSU-Next to work properly. Please upgrade manager to version %2$d or higher!</string>
++  <string name="require_manager_version">The current SHIVKSU-NEXT manager version %1$d is too low for SHIVKSU-NEXT to work properly. Please upgrade manager to version %2$d or higher!</string>
+   <string name="profile_flags">Flags</string>
+   <string name="profile_flags_desc_no_new_privs">Prevent further privilege escalation via KernelSU from within the context of this root profile.</string>
+   <string name="settings_sulog">SU Log</string>
+--- a/manager/app/src/main/res/values-in-rID/strings.xml
++++ b/manager/app/src/main/res/values-in-rID/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">Berfungsi</string>
+   <string name="home_module_update_count">Pembaruan: %d</string>
+   <string name="home_failure">Tidak didukung | Tidak terintegrasi</string>
+-  <string name="home_failure_tip">Kernel Non-GKI tidak didukung. Integrasikan driver KernelSU-Next legacy ke dalam kernel Anda!</string>
++  <string name="home_failure_tip">Kernel Non-GKI tidak didukung. Integrasikan driver SHIVKSU-NEXT legacy ke dalam kernel Anda!</string>
+   <string name="home_kernel">Versi kernel</string>
+   <string name="hook_mode">Mode hook</string>
+   <string name="enable">Aktifkan</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">Spoof AVC</string>
+   <string name="settings_enable_avc_spoof_summary">Memperbaiki kebocoran konteks SELinux akibat penolakan AVC yang tercatat di log audit.</string>
+   <string name="manage_repositories">Kelola Repositori</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">Versi KernelSU-Next saat ini %1$d terlalu rendah agar manajer dapat berfungsi dengan baik. Silakan perbarui ke versi %2$d atau lebih baru!</string>
+-  <string name="profile_umount_modules_summary">Mengaktifkan opsi ini akan memungkinkan KernelSU-Next untuk memulihkan berkas apa pun yang telah dimodifikasi oleh modul untuk aplikasi ini.</string>
+-  <string name="settings_uninstall_temporary_message">Hapus sementara KernelSU-Next, dipulihkan ke keadaan semula setelah mulai ulang berikutnya.</string>
+-  <string name="settings_uninstall_permanent_message">Menghapus KernelSU-Next (root dan semua modul) sepenuhnya dan secara permanen.</string>
+-  <string name="settings_restore_stock_image_message">Pulihkan image asli (jika cadangan ada), biasanya digunakan sebelum OTA; Jika Anda perlu menghapus KernelSU-Next, silakan gunakan \"Hapus permanen\".</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">Versi SHIVKSU-NEXT saat ini %1$d terlalu rendah agar manajer dapat berfungsi dengan baik. Silakan perbarui ke versi %2$d atau lebih baru!</string>
++  <string name="profile_umount_modules_summary">Mengaktifkan opsi ini akan memungkinkan SHIVKSU-NEXT untuk memulihkan berkas apa pun yang telah dimodifikasi oleh modul untuk aplikasi ini.</string>
++  <string name="settings_uninstall_temporary_message">Hapus sementara SHIVKSU-NEXT, dipulihkan ke keadaan semula setelah mulai ulang berikutnya.</string>
++  <string name="settings_uninstall_permanent_message">Menghapus SHIVKSU-NEXT (root dan semua modul) sepenuhnya dan secara permanen.</string>
++  <string name="settings_restore_stock_image_message">Pulihkan image asli (jika cadangan ada), biasanya digunakan sebelum OTA; Jika Anda perlu menghapus SHIVKSU-NEXT, silakan gunakan \"Hapus permanen\".</string>
+   <string name="backup_success">Pencadangan berhasil</string>
+   <string name="backup_failed">Pencadangan gagal</string>
+   <string name="restore_success">Pemulihan berhasil</string>
+@@ -288,7 +288,7 @@
+   <string name="sulog_entry_description_ioctl_grant_root">Akses root diberikan melalui ioctl KernelSU</string>
+   <string name="sulog_entry_title_daemon_restarted">Daemon dimulai ulang</string>
+   <string name="sulog_entry_title_dropped_events">Kejadian yang terlewat</string>
+-  <string name="require_manager_version">Versi manajer KernelSU-Next saat ini %1$d terlalu rendah agar KernelSU-Next dapat berfungsi dengan benar. Harap perbarui manajer ke versi %2$d atau lebih tinggi!</string>
++  <string name="require_manager_version">Versi manajer SHIVKSU-NEXT saat ini %1$d terlalu rendah agar SHIVKSU-NEXT dapat berfungsi dengan benar. Harap perbarui manajer ke versi %2$d atau lebih tinggi!</string>
+   <string name="profile_flags">Flags</string>
+   <string name="profile_flags_desc_no_new_privs">Mencegah peningkatan hak akses lebih lanjut melalui KernelSU dari dalam konteks profil root ini.</string>
+   <string name="settings_sulog">SU Log</string>
+--- a/manager/app/src/main/res/values-it-rIT/strings.xml
++++ b/manager/app/src/main/res/values-it-rIT/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">In esecuzione</string>
+   <string name="home_module_update_count">Aggiornamenti: %d</string>
+   <string name="home_failure">Non supportato | Non integrato</string>
+-  <string name="home_failure_tip">I kernel non-GKI non sono supportati. Integra il driver legacy KernelSU-Next nel tuo kernel!</string>
++  <string name="home_failure_tip">I kernel non-GKI non sono supportati. Integra il driver legacy SHIVKSU-NEXT nel tuo kernel!</string>
+   <string name="home_kernel">Versione kernel</string>
+   <string name="hook_mode">Modalità hook</string>
+   <string name="enable">Abilita</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">Spoofing AVC</string>
+   <string name="settings_enable_avc_spoof_summary">Correggi la perdita di contesto di selinux causata dal rifiuto di avc nel registro di controllo.</string>
+   <string name="manage_repositories">Gestisci Repository</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">La versione attualmente installata di KernelSU-Next %1$d è troppo vecchia ed il manager non può funzionare correttamente. Si prega di aggiornare alla versione %2$d o successiva!</string>
+-  <string name="profile_umount_modules_summary">Abilitando questa opzione, KernelSU-Next potrà ripristinare tutti i file modificati dai moduli per questa app.</string>
+-  <string name="settings_uninstall_temporary_message">Disinstalla temporaneamente KernelSU-Next e recupera il suo stato originale dopo il prossimo riavvio.</string>
+-  <string name="settings_uninstall_permanent_message">Disinstallazione completa e permanente di KernelSU-Next (root e tutti i moduli).</string>
+-  <string name="settings_restore_stock_image_message">Ripristina l\'immagine di fabbrica (se esiste un backup), solitamente utilizzata prima dell\'OTA; se vuoi disinstallare KernelSU-Next, utilizza \"Disinstalla definitivamente\".</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">La versione attualmente installata di SHIVKSU-NEXT %1$d è troppo vecchia ed il manager non può funzionare correttamente. Si prega di aggiornare alla versione %2$d o successiva!</string>
++  <string name="profile_umount_modules_summary">Abilitando questa opzione, SHIVKSU-NEXT potrà ripristinare tutti i file modificati dai moduli per questa app.</string>
++  <string name="settings_uninstall_temporary_message">Disinstalla temporaneamente SHIVKSU-NEXT e recupera il suo stato originale dopo il prossimo riavvio.</string>
++  <string name="settings_uninstall_permanent_message">Disinstallazione completa e permanente di SHIVKSU-NEXT (root e tutti i moduli).</string>
++  <string name="settings_restore_stock_image_message">Ripristina l\'immagine di fabbrica (se esiste un backup), solitamente utilizzata prima dell\'OTA; se vuoi disinstallare SHIVKSU-NEXT, utilizza \"Disinstalla definitivamente\".</string>
+   <string name="backup_success">Backup completato con successo</string>
+   <string name="backup_failed">Backup fallito</string>
+   <string name="restore_success">Ripristino completato con successo</string>
+--- a/manager/app/src/main/res/values-ja-rJP/strings.xml
++++ b/manager/app/src/main/res/values-ja-rJP/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">動作中</string>
+   <string name="home_module_update_count">更新: %d</string>
+   <string name="home_failure">非対応 | 統合されていません</string>
+-  <string name="home_failure_tip">GKI 以外のカーネルは非対応です。KernelSU-Next レガシードライバをカーネルに統合してください！</string>
++  <string name="home_failure_tip">GKI 以外のカーネルは非対応です。SHIVKSU-NEXT レガシードライバをカーネルに統合してください！</string>
+   <string name="home_kernel">カーネルバージョン</string>
+   <string name="hook_mode">フックモード</string>
+   <string name="enable">有効化</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">AVCの偽装</string>
+   <string name="settings_enable_avc_spoof_summary">監査ログでのAVC拒否によって発生するSELinuxコンテキストリークを修正します。</string>
+   <string name="manage_repositories">リポジトリの管理</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">このKernelSU Nextマネージャーのバージョンは%1$dと低く適切に動作しません。バージョン%2$d以上に更新して下さい！</string>
+-  <string name="profile_umount_modules_summary">このオプションを有効にすると、モジュールがこのアプリ対して行った全てのファイルの変更をKernelSU Nextが復元できるようになります。</string>
+-  <string name="settings_uninstall_temporary_message">KernelSU Nextを一時的にアンインストールして、次回の再起動後に元の状態に戻します。</string>
+-  <string name="settings_uninstall_permanent_message">KernelSU Next (Root およびすべてのモジュール) を完全に永続的にアンインストールします。</string>
+-  <string name="settings_restore_stock_image_message">（バックアップが存在する場合）工場出荷時のイメージを復元します。通常は OTA の前に使用します。KernelSU Next をアンインストールする必要がある場合は、「完全にアンインストール」を使用してください。</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">このSHIVKSU-NEXTマネージャーのバージョンは%1$dと低く適切に動作しません。バージョン%2$d以上に更新して下さい！</string>
++  <string name="profile_umount_modules_summary">このオプションを有効にすると、モジュールがこのアプリ対して行った全てのファイルの変更をSHIVKSU-NEXTが復元できるようになります。</string>
++  <string name="settings_uninstall_temporary_message">SHIVKSU-NEXTを一時的にアンインストールして、次回の再起動後に元の状態に戻します。</string>
++  <string name="settings_uninstall_permanent_message">SHIVKSU-NEXT (Root およびすべてのモジュール) を完全に永続的にアンインストールします。</string>
++  <string name="settings_restore_stock_image_message">（バックアップが存在する場合）工場出荷時のイメージを復元します。通常は OTA の前に使用します。SHIVKSU-NEXT をアンインストールする必要がある場合は、「完全にアンインストール」を使用してください。</string>
+   <string name="backup_success">バックアップが成功しました</string>
+   <string name="backup_failed">バックアップに失敗しました</string>
+   <string name="restore_success">復元が成功しました</string>
+--- a/manager/app/src/main/res/values-ko-rKR/strings.xml
++++ b/manager/app/src/main/res/values-ko-rKR/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">작동 중</string>
+   <string name="home_module_update_count">업데이트: %d</string>
+   <string name="home_failure">지원되지 않음 | 통합되지 않음</string>
+-  <string name="home_failure_tip">비 GKI 커널은 지원되지 않습니다. KernelSU-Next 레거시 드라이버를 커널에 통합하세요!</string>
++  <string name="home_failure_tip">비 GKI 커널은 지원되지 않습니다. SHIVKSU-NEXT 레거시 드라이버를 커널에 통합하세요!</string>
+   <string name="home_kernel">커널 버전</string>
+   <string name="hook_mode">Hook 모드</string>
+   <string name="enable">활성화</string>
+@@ -236,8 +236,8 @@
+   <string name="settings_enable_avc_spoof">AVC 스푸핑</string>
+   <string name="settings_enable_avc_spoof_summary">감사 로그에서 avc 거부로 인해 발생한 selinux 컨텍스트 누수를 수정하세요.</string>
+   <string name="manage_repositories">저장소 관리</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">KernelSU Next 버전 %1$d이 너무 낮아서 Manager가 작동하지 않습니다. %2$d 이상의 버전을 사용하세요!</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">SHIVKSU-NEXT 버전 %1$d이 너무 낮아서 Manager가 작동하지 않습니다. %2$d 이상의 버전을 사용하세요!</string>
+   <string name="profile_umount_modules_summary">이 옵션이 활성화되면, KernelSU는 이 앱에 대한 모듈의 모든 수정사항을 복구합니다.</string>
+   <string name="settings_uninstall_temporary_message">임시로 KernelSU를 삭제하고, 다음 재부팅에 원래대로 복구합니다.</string>
+   <string name="settings_uninstall_permanent_message">완전히, 그리고 영구히 KernelSU (루트 및 모든 모듈)를 삭제합니다.</string>
+--- a/manager/app/src/main/res/values-pl-rPL/strings.xml
++++ b/manager/app/src/main/res/values-pl-rPL/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">Działa</string>
+   <string name="home_module_update_count">Aktualizacje: %d</string>
+   <string name="home_failure">Nieobsługiwany | Niezintegrowany</string>
+-  <string name="home_failure_tip">Jądra Non-GKI nie są obsługiwane. Zintegruj sterownik z brancha legacy KernelSU-Next ze swoim jądrem!</string>
++  <string name="home_failure_tip">Jądra Non-GKI nie są obsługiwane. Zintegruj sterownik z brancha legacy SHIVKSU-NEXT ze swoim jądrem!</string>
+   <string name="home_kernel">Wersja jądra</string>
+   <string name="hook_mode">Tryb przechwytywania</string>
+   <string name="enable">Włącz</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">Sproofowanie AVC</string>
+   <string name="settings_enable_avc_spoof_summary">Naprawa wycieku kontekstu SELinux spowodowanego odmową AVC w logu audytu.</string>
+   <string name="manage_repositories">Zarządzaj repozytoriami</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">Aktualna wersja KernelSU-Next %1$d jest zbyt niska, aby menedżer działał poprawnie. Uaktualnij do wersji %2$d lub wyższej!</string>
+-  <string name="profile_umount_modules_summary">Włączenie tej opcji pozwoli KernelSU-Next przywrócić zmodyfikowane pliki przez moduły dla tej aplikacji.</string>
+-  <string name="settings_uninstall_temporary_message">Tymczasowo odinstaluj KernelSU-Next, przywróć do stanu oryginalnego po następnym restarcie.</string>
+-  <string name="settings_uninstall_permanent_message">Odinstaluj KernelSU-Next (root i wszystkie moduły) całkowicie i nieodwracalnie.</string>
+-  <string name="settings_restore_stock_image_message">Przywróć domyślny obraz fabryczny (jeżeli istnieje), zwykle używany przed OTA; jeśli chcesz odinstalować KernelSU-Next, użyj \"Odinstaluj na stałe\".</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">Aktualna wersja SHIVKSU-NEXT %1$d jest zbyt niska, aby menedżer działał poprawnie. Uaktualnij do wersji %2$d lub wyższej!</string>
++  <string name="profile_umount_modules_summary">Włączenie tej opcji pozwoli SHIVKSU-NEXT przywrócić zmodyfikowane pliki przez moduły dla tej aplikacji.</string>
++  <string name="settings_uninstall_temporary_message">Tymczasowo odinstaluj SHIVKSU-NEXT, przywróć do stanu oryginalnego po następnym restarcie.</string>
++  <string name="settings_uninstall_permanent_message">Odinstaluj SHIVKSU-NEXT (root i wszystkie moduły) całkowicie i nieodwracalnie.</string>
++  <string name="settings_restore_stock_image_message">Przywróć domyślny obraz fabryczny (jeżeli istnieje), zwykle używany przed OTA; jeśli chcesz odinstalować SHIVKSU-NEXT, użyj \"Odinstaluj na stałe\".</string>
+   <string name="backup_success">Kopia zapasowa ukończona pomyślnie</string>
+   <string name="backup_failed">Nie udało się wykonać kopii zapasowej</string>
+   <string name="restore_success">Przywracanie ukończone pomyślnie</string>
+@@ -288,7 +288,7 @@
+   <string name="sulog_entry_description_ioctl_grant_root">Przyznano dostęp do roota przez KernelSU ioctl</string>
+   <string name="sulog_entry_title_daemon_restarted">Deamon zrestartowany</string>
+   <string name="sulog_entry_title_dropped_events">Porzucone zdarzenia</string>
+-  <string name="require_manager_version">Aktualna wersja KernelSU-Next (wbudowana w jądrze) %1$d jest zbyt niska, aby menedżer działał poprawnie. Zaktualizuj do wersji %2$d lub wyższej!</string>
++  <string name="require_manager_version">Aktualna wersja SHIVKSU-NEXT (wbudowana w jądrze) %1$d jest zbyt niska, aby menedżer działał poprawnie. Zaktualizuj do wersji %2$d lub wyższej!</string>
+   <string name="profile_flags">Flagi</string>
+   <string name="profile_flags_desc_no_new_privs">Zapobiegaj dalszej eskalacji uprawnień przez KernelSU w kontekście tego profilu głównego.</string>
+   <string name="settings_sulog">Logi SU</string>
+--- a/manager/app/src/main/res/values-pt-rBR/strings.xml
++++ b/manager/app/src/main/res/values-pt-rBR/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">Em execução</string>
+   <string name="home_module_update_count">Atualizações: %d</string>
+   <string name="home_failure">Não suportado | Não integrado</string>
+-  <string name="home_failure_tip">Kernels não-GKI não são suportados. Integre o driver legado Kernelsu-next em seu kernel!</string>
++  <string name="home_failure_tip">Kernels não-GKI não são suportados. Integre o driver legado SHIVKSU-NEXT em seu kernel!</string>
+   <string name="home_kernel">Versão do kernel</string>
+   <string name="hook_mode">Modo do gancho</string>
+   <string name="enable">Ativar</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">Spoofing de AVC</string>
+   <string name="settings_enable_avc_spoof_summary">Corrigir vazamento de contexto do Selinux causado por negação de Avc no log de auditoria.</string>
+   <string name="manage_repositories">Gerenciar Repositórios</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">A versão atual do KernelSU-Next, %1$d, é muito antiga para o gerenciador funcionar corretamente. Atualize para a versão %2$d ou superior!</string>
+-  <string name="profile_umount_modules_summary">Habilitar esta opção permitirá que o KernelSU-Next restaure quaisquer arquivos modificados pelos módulos deste aplicativo.</string>
+-  <string name="settings_uninstall_temporary_message">Desinstale temporariamente o KernelSU-Next e restaure o estado original após a próxima reinicialização.</string>
+-  <string name="settings_uninstall_permanent_message">Desinstalar o KernelSU-Next (root e todos os módulos) completa e permanentemente.</string>
+-  <string name="settings_restore_stock_image_message">Restaure a imagem de fábrica original (se houver um backup), geralmente usada antes da atualização OTA; se precisar desinstalar o KernelSU-Next, use \"Desinstalar permanentemente\".</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">A versão atual do SHIVKSU-NEXT, %1$d, é muito antiga para o gerenciador funcionar corretamente. Atualize para a versão %2$d ou superior!</string>
++  <string name="profile_umount_modules_summary">Habilitar esta opção permitirá que o SHIVKSU-NEXT restaure quaisquer arquivos modificados pelos módulos deste aplicativo.</string>
++  <string name="settings_uninstall_temporary_message">Desinstale temporariamente o SHIVKSU-NEXT e restaure o estado original após a próxima reinicialização.</string>
++  <string name="settings_uninstall_permanent_message">Desinstalar o SHIVKSU-NEXT (root e todos os módulos) completa e permanentemente.</string>
++  <string name="settings_restore_stock_image_message">Restaure a imagem de fábrica original (se houver um backup), geralmente usada antes da atualização OTA; se precisar desinstalar o SHIVKSU-NEXT, use \"Desinstalar permanentemente\".</string>
+   <string name="backup_success">Cópia de segurança concluída com sucesso</string>
+   <string name="backup_failed">Falha no backup</string>
+   <string name="restore_success">Restauração concluída com sucesso</string>
+--- a/manager/app/src/main/res/values-ru-rRU/strings.xml
++++ b/manager/app/src/main/res/values-ru-rRU/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">Работает</string>
+   <string name="home_module_update_count">Обновлений: %d</string>
+   <string name="home_failure">Не поддерживается | Не интегрирован</string>
+-  <string name="home_failure_tip">Ядра, отличные от GKI, не поддерживаются. Для корректной работы добавьте поддержку legacy драйвера KernelSU-Next в ваше ядро!</string>
++  <string name="home_failure_tip">Ядра, отличные от GKI, не поддерживаются. Для корректной работы добавьте поддержку legacy драйвера SHIVKSU-NEXT в ваше ядро!</string>
+   <string name="home_kernel">Версия ядра</string>
+   <string name="hook_mode">Режим хуков</string>
+   <string name="enable">Включить</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">Применять AVC спуфинг</string>
+   <string name="settings_enable_avc_spoof_summary">Исправить утечку контекста SELinux, вызванную отказом avc в журнале аудита.</string>
+   <string name="manage_repositories">Управление репозиториями</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">Текущая версия KernelSU-Next %1$d слишком стара для корректной работы менеджера. Пожалуйста, обновитесь до версии %2$d или выше!</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">Текущая версия SHIVKSU-NEXT %1$d слишком стара для корректной работы менеджера. Пожалуйста, обновитесь до версии %2$d или выше!</string>
+   <string name="profile_umount_modules_summary">Если этот параметр включен, то все изменения файлов, внесённые модулями, будут восстановлены для данного приложения.</string>
+-  <string name="settings_uninstall_temporary_message">Временно удаляет KernelSU-Next, восстанавливая исходное состояние после следующей перезагрузки.</string>
+-  <string name="settings_uninstall_permanent_message">Полностью и навсегда удаляет KernelSU-Next, включая root и все модули.</string>
+-  <string name="settings_restore_stock_image_message">Восстанавливает исходный образ, если резервная копия доступна. Обычно используется перед OTA-обновлением. Если Вы хотите удалить KernelSU-Next, пожалуйста, воспользуйтесь опцией \"Полное удаление\".</string>
++  <string name="settings_uninstall_temporary_message">Временно удаляет SHIVKSU-NEXT, восстанавливая исходное состояние после следующей перезагрузки.</string>
++  <string name="settings_uninstall_permanent_message">Полностью и навсегда удаляет SHIVKSU-NEXT, включая root и все модули.</string>
++  <string name="settings_restore_stock_image_message">Восстанавливает исходный образ, если резервная копия доступна. Обычно используется перед OTA-обновлением. Если Вы хотите удалить SHIVKSU-NEXT, пожалуйста, воспользуйтесь опцией \"Полное удаление\".</string>
+   <string name="backup_success">Резервное копирование успешно завершено</string>
+   <string name="backup_failed">Резервное копирование не удалось</string>
+   <string name="restore_success">Восстановление резервной копии успешно завершено</string>
+--- a/manager/app/src/main/res/values-sv-rSE/strings.xml
++++ b/manager/app/src/main/res/values-sv-rSE/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">Working</string>
+   <string name="home_module_update_count">Updates: %d</string>
+   <string name="home_failure">Unsupported | Not integrated</string>
+-  <string name="home_failure_tip">Non-GKI kernels are not supported. Integrate KernelSU-Next legacy driver in your kernel!</string>
++  <string name="home_failure_tip">Non-GKI kernels are not supported. Integrate SHIVKSU-NEXT legacy driver in your kernel!</string>
+   <string name="home_kernel">Kernel version</string>
+   <string name="hook_mode">Hook mode</string>
+   <string name="enable">Enable</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">AVC spoofing</string>
+   <string name="settings_enable_avc_spoof_summary">Fix selinux context leak caused by avc denial in audit log.</string>
+   <string name="manage_repositories">Manage Repositories</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">The current KernelSU-Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
+-  <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU-Next to restore any modified files by the modules for this app.</string>
+-  <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
+-  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
+-  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU-Next, please use \"Uninstall permanently\".</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">The current SHIVKSU-NEXT version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
++  <string name="profile_umount_modules_summary">Enabling this option will allow SHIVKSU-NEXT to restore any modified files by the modules for this app.</string>
++  <string name="settings_uninstall_temporary_message">Temporarily uninstall SHIVKSU-NEXT, restore to original state after next reboot.</string>
++  <string name="settings_uninstall_permanent_message">Uninstalling SHIVKSU-NEXT (root and all modules) completely and permanently.</string>
++  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall SHIVKSU-NEXT, please use \"Uninstall permanently\".</string>
+   <string name="backup_success">Backup completed successfully</string>
+   <string name="backup_failed">Backup failed</string>
+   <string name="restore_success">Restore completed successfully</string>
+@@ -288,7 +288,7 @@
+   <string name="sulog_entry_description_ioctl_grant_root">Granted root access via KernelSU ioctl</string>
+   <string name="sulog_entry_title_daemon_restarted">Daemon restarted</string>
+   <string name="sulog_entry_title_dropped_events">Dropped events</string>
+-  <string name="require_manager_version">The current KernelSU-Next manager version %1$d is too low for KernelSU-Next to work properly. Please upgrade manager to version %2$d or higher!</string>
++  <string name="require_manager_version">The current SHIVKSU-NEXT manager version %1$d is too low for SHIVKSU-NEXT to work properly. Please upgrade manager to version %2$d or higher!</string>
+   <string name="profile_flags">Flags</string>
+   <string name="profile_flags_desc_no_new_privs">Prevent further privilege escalation via KernelSU from within the context of this root profile.</string>
+   <string name="settings_sulog">SU Log</string>
+--- a/manager/app/src/main/res/values-th-rTH/strings.xml
++++ b/manager/app/src/main/res/values-th-rTH/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">Working</string>
+   <string name="home_module_update_count">Updates: %d</string>
+   <string name="home_failure">Unsupported | Not integrated</string>
+-  <string name="home_failure_tip">Non-GKI kernels are not supported. Integrate KernelSU-Next legacy driver in your kernel!</string>
++  <string name="home_failure_tip">Non-GKI kernels are not supported. Integrate SHIVKSU-NEXT legacy driver in your kernel!</string>
+   <string name="home_kernel">Kernel version</string>
+   <string name="hook_mode">Hook mode</string>
+   <string name="enable">Enable</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">AVC spoofing</string>
+   <string name="settings_enable_avc_spoof_summary">Fix selinux context leak caused by avc denial in audit log.</string>
+   <string name="manage_repositories">Manage Repositories</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">The current KernelSU-Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
+-  <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU-Next to restore any modified files by the modules for this app.</string>
+-  <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
+-  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
+-  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU-Next, please use \"Uninstall permanently\".</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">The current SHIVKSU-NEXT version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
++  <string name="profile_umount_modules_summary">Enabling this option will allow SHIVKSU-NEXT to restore any modified files by the modules for this app.</string>
++  <string name="settings_uninstall_temporary_message">Temporarily uninstall SHIVKSU-NEXT, restore to original state after next reboot.</string>
++  <string name="settings_uninstall_permanent_message">Uninstalling SHIVKSU-NEXT (root and all modules) completely and permanently.</string>
++  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall SHIVKSU-NEXT, please use \"Uninstall permanently\".</string>
+   <string name="backup_success">Backup completed successfully</string>
+   <string name="backup_failed">Backup failed</string>
+   <string name="restore_success">Restore completed successfully</string>
+@@ -288,7 +288,7 @@
+   <string name="sulog_entry_description_ioctl_grant_root">Granted root access via KernelSU ioctl</string>
+   <string name="sulog_entry_title_daemon_restarted">Daemon restarted</string>
+   <string name="sulog_entry_title_dropped_events">Dropped events</string>
+-  <string name="require_manager_version">The current KernelSU-Next manager version %1$d is too low for KernelSU-Next to work properly. Please upgrade manager to version %2$d or higher!</string>
++  <string name="require_manager_version">The current SHIVKSU-NEXT manager version %1$d is too low for SHIVKSU-NEXT to work properly. Please upgrade manager to version %2$d or higher!</string>
+   <string name="profile_flags">Flags</string>
+   <string name="profile_flags_desc_no_new_privs">Prevent further privilege escalation via KernelSU from within the context of this root profile.</string>
+   <string name="settings_sulog">SU Log</string>
+--- a/manager/app/src/main/res/values-tr-rTR/strings.xml
++++ b/manager/app/src/main/res/values-tr-rTR/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">Çalışıyor</string>
+   <string name="home_module_update_count">Güncellemeler: %d</string>
+   <string name="home_failure">Desteklenmiyor | Entegre edilmedi</string>
+-  <string name="home_failure_tip">GKI olmayan çekirdekler desteklenmemektedir. KernelSU-Next eski sürücüsünü çekirdeğinize entegre edin!</string>
++  <string name="home_failure_tip">GKI olmayan çekirdekler desteklenmemektedir. SHIVKSU-NEXT eski sürücüsünü çekirdeğinize entegre edin!</string>
+   <string name="home_kernel">Çekirdek sürümü</string>
+   <string name="hook_mode">Kanca modu</string>
+   <string name="enable">Etkinleştir</string>
+@@ -235,11 +235,11 @@
+   <string name="settings_enable_avc_spoof">AVC taklidi</string>
+   <string name="settings_enable_avc_spoof_summary">Denetim günlüğünde avc reddi nedeniyle oluşan selinux bağlam sızıntısını düzeltin.</string>
+   <string name="manage_repositories">Depoları Yönet</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">Geçerli KernelSU Next sürümü %1$d, yöneticinin düzgün çalışması için çok düşük. Lütfen %2$d veya daha yüksek bir sürüme yükseltin!</string>
+-  <string name="profile_umount_modules_summary">Bu seçeneğin etkinleştirilmesi, KernelSU Next\'in bu uygulama için modüller tarafından değiştirilen tüm dosyaları geri yüklemesine izin verecektir.</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">Geçerli SHIVKSU-NEXT sürümü %1$d, yöneticinin düzgün çalışması için çok düşük. Lütfen %2$d veya daha yüksek bir sürüme yükseltin!</string>
++  <string name="profile_umount_modules_summary">Bu seçeneğin etkinleştirilmesi, SHIVKSU-NEXT\'in bu uygulama için modüller tarafından değiştirilen tüm dosyaları geri yüklemesine izin verecektir.</string>
+   <string name="settings_uninstall_temporary_message">KernelSU\'yu geçici olarak kaldırın, bir sonraki yeniden başlatmadan sonra orijinal duruma geri dönün.</string>
+-  <string name="settings_uninstall_permanent_message">KernelSU-Next\'i (kök ve tüm modüller) tamamen ve kalıcı olarak kaldırın.</string>
++  <string name="settings_uninstall_permanent_message">SHIVKSU-NEXT\'i (kök ve tüm modüller) tamamen ve kalıcı olarak kaldırın.</string>
+   <string name="settings_restore_stock_image_message">(eğer yedek varsa) Stok fabrika imajını geri yükleyin, genellikle OTA\'dan önce kullanılır; KernelSU\'yu kaldırmanız gerekiyorsa, lütfen \"Kalıcı olarak kaldır\" seçeneğini kullanın.</string>
+   <string name="backup_success">Yedekleme başarıyla tamamlandı</string>
+   <string name="backup_failed">Yedekleme başarısız oldu</string>
+@@ -288,8 +288,8 @@
+   <string name="sulog_entry_description_ioctl_grant_root">KernelSU ioctl aracılığıyla kök erişimi verildi</string>
+   <string name="sulog_entry_title_daemon_restarted">Daemon yeniden başlatıldı</string>
+   <string name="sulog_entry_title_dropped_events">İptal edilen etkinlikler</string>
+-  <string name="require_manager_version">Mevcut KernelSU-Next yöneticisi sürümü 
+-%1$d, KernelSU-Next\'in düzgün çalışması için çok eski. Lütfen yöneticiyi %2$d veya daha yeni bir sürüme yükseltin!</string>
++  <string name="require_manager_version">Mevcut SHIVKSU-NEXT yöneticisi sürümü 
++%1$d, SHIVKSU-NEXT\'in düzgün çalışması için çok eski. Lütfen yöneticiyi %2$d veya daha yeni bir sürüme yükseltin!</string>
+   <string name="profile_flags">Flags</string>
+   <string name="profile_flags_desc_no_new_privs">Bu root profili üzerinden KernelSU kullanılarak daha fazla yetki alınmasını engelle.</string>
+   <string name="settings_sulog">SU Günlüğü</string>
+--- a/manager/app/src/main/res/values-uk-rUA/strings.xml
++++ b/manager/app/src/main/res/values-uk-rUA/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">Працює</string>
+   <string name="home_module_update_count">Оновлень: %d</string>
+   <string name="home_failure">Не підтримується | Не інтегрований</string>
+-  <string name="home_failure_tip">Ядра без підтримки GKI не підтримуються. Інтегруйте legacy драйвер KernelSU-Next у своє ядро!</string>
++  <string name="home_failure_tip">Ядра без підтримки GKI не підтримуються. Інтегруйте legacy драйвер SHIVKSU-NEXT у своє ядро!</string>
+   <string name="home_kernel">Версія ядра</string>
+   <string name="hook_mode">Режим хука</string>
+   <string name="enable">Ввімкнути</string>
+@@ -237,12 +237,12 @@
+   <string name="settings_enable_avc_spoof">AVC Підміна</string>
+   <string name="settings_enable_avc_spoof_summary">Виправити витік контексту selinux викликаний відхиленням avc в журналі аудиту.</string>
+   <string name="manage_repositories">Керування репозиторіями</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">Поточна версія KernelSU Next %1$d надто низька для коректної роботи менеджера. Будь ласка, оновіться до версії %2$d або вище!</string>
+-  <string name="profile_umount_modules_summary">Увімкнення цієї опції дозволить KernelSU-Next відновлювати для цього додатка будь-які файли, змінені модулями.</string>
+-  <string name="settings_uninstall_temporary_message">Тимчасово видалити KernelSU-Next, відновити початковий стан після наступного перезавантаження.</string>
+-  <string name="settings_uninstall_permanent_message">Повне та остаточне видалення KernelSU Next (Root та всіх модулів).</string>
+-  <string name="settings_restore_stock_image_message">Відновити стоковий заводський образ (якщо існує резервна копія), зазвичай використовується перед OTA; якщо вам потрібно видалити KernelSU-Next, будь ласка, використовуйте «Видалити назавжди».</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">Поточна версія SHIVKSU-NEXT %1$d надто низька для коректної роботи менеджера. Будь ласка, оновіться до версії %2$d або вище!</string>
++  <string name="profile_umount_modules_summary">Увімкнення цієї опції дозволить SHIVKSU-NEXT відновлювати для цього додатка будь-які файли, змінені модулями.</string>
++  <string name="settings_uninstall_temporary_message">Тимчасово видалити SHIVKSU-NEXT, відновити початковий стан після наступного перезавантаження.</string>
++  <string name="settings_uninstall_permanent_message">Повне та остаточне видалення SHIVKSU-NEXT (Root та всіх модулів).</string>
++  <string name="settings_restore_stock_image_message">Відновити стоковий заводський образ (якщо існує резервна копія), зазвичай використовується перед OTA; якщо вам потрібно видалити SHIVKSU-NEXT, будь ласка, використовуйте «Видалити назавжди».</string>
+   <string name="backup_success">Резервне копіювання успішно завершене</string>
+   <string name="backup_failed">Помилка резервного копіювання</string>
+   <string name="restore_success">Відновлення успішно завершено</string>
+--- a/manager/app/src/main/res/values-vi-rVN/strings.xml
++++ b/manager/app/src/main/res/values-vi-rVN/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">Đang hoạt động</string>
+   <string name="home_module_update_count">Cập nhật: %d</string>
+   <string name="home_failure">Không hỗ trợ | Chưa được tích hợp</string>
+-  <string name="home_failure_tip">Kernel Non-GKI không được hỗ trợ. Hãy tích hợp trình điều khiển cũ KernelSU-Next vào kernel của bạn!</string>
++  <string name="home_failure_tip">Kernel Non-GKI không được hỗ trợ. Hãy tích hợp trình điều khiển cũ SHIVKSU-NEXT vào kernel của bạn!</string>
+   <string name="home_kernel">Phiên bản Kernel</string>
+   <string name="hook_mode">Chế độ Hook</string>
+   <string name="enable">Bật</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">Giả mạo AVC</string>
+   <string name="settings_enable_avc_spoof_summary">Khắc phục lỗi rò rỉ ngữ cảnh selinux do từ chối avc gây ra trong nhật ký kiểm tra.</string>
+   <string name="manage_repositories">Quản lý Kho</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">Phiên bản KernelSU-Next hiện tại %1$d quá thấp để trình quản lý có thể hoạt động bình thường. Vui lòng nâng cấp lên phiên bản %2$d hoặc cao hơn!</string>
+-  <string name="profile_umount_modules_summary">Bật tùy chọn này sẽ cho phép KernelSU-Next khôi phục bất kỳ tệp nào đã được sửa đổi bởi các mô-đun cho ứng dụng này.</string>
+-  <string name="settings_uninstall_temporary_message">Tạm thời gỡ cài đặt KernelSU-Next, khôi phục về trạng thái ban đầu sau lần khởi động lại tiếp theo.</string>
+-  <string name="settings_uninstall_permanent_message">Gỡ cài đặt KernelSU-Next (root và tất cả các mô-đun) hoàn toàn và vĩnh viễn.</string>
+-  <string name="settings_restore_stock_image_message">Khôi phục về image gốc (nếu có một bản sao lưu tồn tại), thường được sử dụng trước OTA; nếu bạn cần gỡ hẳn KernelSU-Next, hãy sử dụng \"Gỡ cài đặt vĩnh viễn\".</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">Phiên bản SHIVKSU-NEXT hiện tại %1$d quá thấp để trình quản lý có thể hoạt động bình thường. Vui lòng nâng cấp lên phiên bản %2$d hoặc cao hơn!</string>
++  <string name="profile_umount_modules_summary">Bật tùy chọn này sẽ cho phép SHIVKSU-NEXT khôi phục bất kỳ tệp nào đã được sửa đổi bởi các mô-đun cho ứng dụng này.</string>
++  <string name="settings_uninstall_temporary_message">Tạm thời gỡ cài đặt SHIVKSU-NEXT, khôi phục về trạng thái ban đầu sau lần khởi động lại tiếp theo.</string>
++  <string name="settings_uninstall_permanent_message">Gỡ cài đặt SHIVKSU-NEXT (root và tất cả các mô-đun) hoàn toàn và vĩnh viễn.</string>
++  <string name="settings_restore_stock_image_message">Khôi phục về image gốc (nếu có một bản sao lưu tồn tại), thường được sử dụng trước OTA; nếu bạn cần gỡ hẳn SHIVKSU-NEXT, hãy sử dụng \"Gỡ cài đặt vĩnh viễn\".</string>
+   <string name="backup_success">Sao lưu thành công</string>
+   <string name="backup_failed">Sao lưu thất bại</string>
+   <string name="restore_success">Khôi phục thành công</string>
+--- a/manager/app/src/main/res/values-zh-rCN/strings.xml
++++ b/manager/app/src/main/res/values-zh-rCN/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">工作中</string>
+   <string name="home_module_update_count">%d 个模块可更新</string>
+   <string name="home_failure">不支持 | 未集成</string>
+-  <string name="home_failure_tip">不支持非 GKI 内核。请将 KernelSU-Next 传统驱动程序集成到您的内核中！</string>
++  <string name="home_failure_tip">不支持非 GKI 内核。请将 SHIVKSU-NEXT 传统驱动程序集成到您的内核中！</string>
+   <string name="home_kernel">内核版本</string>
+   <string name="hook_mode">Hook 模式</string>
+   <string name="enable">启用</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">AVC 日志伪装</string>
+   <string name="settings_enable_avc_spoof_summary">修复日志中 avc denial 导致的 SELinux 上下文泄漏。</string>
+   <string name="manage_repositories">管理仓库</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">当前 KernelSU-Next 版本 %1$d 过低，管理器无法正常工作。请升级到 %2$d 或更高版本！</string>
+-  <string name="profile_umount_modules_summary">启用该选项后将允许 KernelSU-Next 为本应用还原被模块修改过的文件。</string>
+-  <string name="settings_uninstall_temporary_message">临时卸载 KernelSU-Next，设备下次重启后将恢复原状。</string>
+-  <string name="settings_uninstall_permanent_message">彻底永久卸载 KernelSU-Next（包括 root 和所有模块）。</string>
+-  <string name="settings_restore_stock_image_message">恢复原厂镜像（如果存在备份），通常在 OTA 更新前使用；如果需要卸载 KernelSU-Next，请使用“永久卸载”。</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">当前 SHIVKSU-NEXT 版本 %1$d 过低，管理器无法正常工作。请升级到 %2$d 或更高版本！</string>
++  <string name="profile_umount_modules_summary">启用该选项后将允许 SHIVKSU-NEXT 为本应用还原被模块修改过的文件。</string>
++  <string name="settings_uninstall_temporary_message">临时卸载 SHIVKSU-NEXT，设备下次重启后将恢复原状。</string>
++  <string name="settings_uninstall_permanent_message">彻底永久卸载 SHIVKSU-NEXT（包括 root 和所有模块）。</string>
++  <string name="settings_restore_stock_image_message">恢复原厂镜像（如果存在备份），通常在 OTA 更新前使用；如果需要卸载 SHIVKSU-NEXT，请使用“永久卸载”。</string>
+   <string name="backup_success">备份成功</string>
+   <string name="backup_failed">备份失败</string>
+   <string name="restore_success">恢复成功</string>
+--- a/manager/app/src/main/res/values-zh-rTW/strings.xml
++++ b/manager/app/src/main/res/values-zh-rTW/strings.xml
+@@ -14,7 +14,7 @@
+   <string name="home_working">工作中</string>
+   <string name="home_module_update_count">可更新模組： %d</string>
+   <string name="home_failure">不支援 | 未整合</string>
+-  <string name="home_failure_tip">不支援非 GKI 核心。請將 KernelSU-Next 整合至您的核心中！</string>
++  <string name="home_failure_tip">不支援非 GKI 核心。請將 SHIVKSU-NEXT 整合至您的核心中！</string>
+   <string name="home_kernel">核心版本</string>
+   <string name="hook_mode">Hook 模式</string>
+   <string name="enable">啟用</string>
+@@ -235,12 +235,12 @@
+   <string name="settings_enable_avc_spoof">AVC spoofing</string>
+   <string name="settings_enable_avc_spoof_summary">修復日誌中 avc denial 導致的 Selinux 上下文洩漏。</string>
+   <string name="manage_repositories">管理儲存庫</string>
+-  <string name="app_name">KernelSU-Next</string>
+-  <string name="require_kernel_version">目前 KernelSU-Next 版本 %1$d 過低，管理員無法正常工作，請升級內核 KernelSU-Next 版本至 %2$d 或以上！</string>
++  <string name="app_name">SHIVKSU-NEXT</string>
++  <string name="require_kernel_version">目前 SHIVKSU-NEXT 版本 %1$d 過低，管理員無法正常工作，請升級內核 SHIVKSU-NEXT 版本至 %2$d 或以上！</string>
+   <string name="profile_umount_modules_summary">啟用選項後，KernelSU 會將應用程式內遭模組修改的檔案恢復原狀。</string>
+-  <string name="settings_uninstall_temporary_message">暫時移除 KernelSU Next， 設備下次重新啓動後還原至原始狀態。</string>
+-  <string name="settings_uninstall_permanent_message">徹底永久移除 KernelSU Next，將失去 Root 權限及所有已安裝的模組。</string>
+-  <string name="settings_restore_stock_image_message">還原原廠鏡像 (若存在備份)，一般在OTA前使用；如果需要移除 KernelSU Next, 請使用“永久移除”。</string>
++  <string name="settings_uninstall_temporary_message">暫時移除 SHIVKSU-NEXT， 設備下次重新啓動後還原至原始狀態。</string>
++  <string name="settings_uninstall_permanent_message">徹底永久移除 SHIVKSU-NEXT，將失去 Root 權限及所有已安裝的模組。</string>
++  <string name="settings_restore_stock_image_message">還原原廠鏡像 (若存在備份)，一般在OTA前使用；如果需要移除 SHIVKSU-NEXT, 請使用“永久移除”。</string>
+   <string name="backup_success">備份完成</string>
+   <string name="backup_failed">備份失敗</string>
+   <string name="restore_success">還原成功</string>
+--- a/manager/build.gradle.kts
++++ b/manager/build.gradle.kts
+@@ -48,12 +48,14 @@
+ }
+ 
+ fun getVersionCode(): Int {
++    providers.gradleProperty("managerVersionCode").orNull?.let { return it.toInt() }
+     val commitCount = getGitCommitCount()
+     val major = 1
+     return major * 30000 + commitCount
+ }
+ 
+ fun getVersionName(): String {
++    providers.gradleProperty("managerVersionName").orNull?.let { return it }
+     return getGitDescribe()
+ }
+ 
+--- a/manager/scripts/update_binary.sh
++++ b/manager/scripts/update_binary.sh
+@@ -1,8 +1,8 @@
+ #!/bin/sh
+ 
+-TMPDIR=/dev/tmp
+-rm -rf $TMPDIR
+-mkdir -p $TMPDIR 2>/dev/null
++TMPDIR="/dev/tmp/shivksu-installer-$$"
++mkdir -p "$TMPDIR" 2>/dev/null || exit 1
++trap 'rm -rf "$TMPDIR"' EXIT
+ 
+ ARCH="$(getprop ro.product.cpu.abi)"
+ OUTFD=/proc/self/fd/$2
+@@ -11,32 +11,53 @@
+   echo -e "ui_print $1\nui_print" >> $OUTFD
+ }
+ 
+-if [ ! "$ARCH" = "arm64-v8a" ]; then
+-    ui_print "- Unsupported architecture: $ARCH"
+-    exit 1
+-fi
++case "$ARCH" in
++    arm64-v8a|x86_64) ;;
++    *)
++        ui_print "- Unsupported architecture: $ARCH"
++        exit 1
++        ;;
++esac
+ 
+ # Extract ksud
+-unzip -o "$3" "lib/$ARCH/libksud.so" -d $TMPDIR >&2
++unzip -o "$3" "lib/$ARCH/libksud.so" -d "$TMPDIR" >&2 || exit 1
+ 
+ KSUD="$TMPDIR/lib/$ARCH/libksud.so"
+ 
+ chmod 755 "$KSUD"
+ 
++run_ksud() {
++    "$KSUD" "$@" > "$TMPDIR/install.log" 2>&1
++    result=$?
++    while IFS= read -r line || [ -n "$line" ]; do
++        ui_print "$line"
++    done < "$TMPDIR/install.log"
++    return "$result"
++}
++
+ # use ksud to install or uninstall
+ case "$3" in
+   *uninstall*|*Uninstall*)
+-    ui_print "- Uninstalling KernelSU-Next..."
+-    "$KSUD" uninstall 2>&1 | while read -r line; do
+-      ui_print "$line"
+-    done
++    ui_print "- Uninstalling SHIVKSU-NEXT..."
++    run_ksud uninstall
+     ;;
+   *)
+-    ui_print "- Installing KernelSU-Next..."
+-    "$KSUD" boot-patch --flash 2>&1 | while read -r line; do
+-      ui_print "$line"
+-    done
++    ui_print "- Installing SHIVKSU-NEXT..."
++    KMI="$("$KSUD" boot-info current-kmi)" || exit 1
++    case "$KMI" in
++        android12-5.10|android13-5.10|android13-5.15|android14-5.15|android14-6.1|android15-6.6|android16-6.12|android17-6.18) ;;
++        *)
++            ui_print "- No compatible SHIVKSU-NEXT driver for $KMI ($ARCH)"
++            exit 1
++            ;;
++    esac
++    LKM="$TMPDIR/kernelsu.ko"
++    if ! unzip -p "$3" "assets/custom-lkm/$ARCH/${KMI}_kernelsu.ko" > "$LKM"; then
++        ui_print "- Matching SHIVKSU-NEXT driver is missing"
++        exit 1
++    fi
++    run_ksud boot-patch --flash --kmi "$KMI" --module "$LKM"
+     ;;
+ esac
+ 
+-true
++exit $?
+--- a/manager/scripts/updater_script.sh
++++ b/manager/scripts/updater_script.sh
+@@ -1 +1 @@
+-# KernelSU-Next installer/uninstaller script
++# SHIVKSU-NEXT installer/uninstaller script
+--- a/manager/settings.gradle.kts
++++ b/manager/settings.gradle.kts
+@@ -17,5 +17,5 @@
+     }
+ }
+ 
+-rootProject.name = "KernelSU-Next"
++rootProject.name = "SHIVKSU-NEXT"
+ include(":app")
+--- a/manager/spoof
++++ b/manager/spoof
+@@ -33,7 +33,7 @@
+ 
+ if [ -f "./app/build.gradle.kts" ]; then
+     sed -i '/val managerVersionName:/a val managerVersionNameSpoofed = "${managerVersionName}-spoofed"' ./app/build.gradle.kts
+-    sed -i 's/outputFileName = "KernelSU_Next_${managerVersionName}_${managerVersionCode}-\$name.apk"/outputFileName = "KernelSU_Next_${managerVersionNameSpoofed}_${managerVersionCode}-\$name.apk"/' ./app/build.gradle.kts
++    sed -i 's/outputFileName = "SHIVKSU-NEXT_${managerVersionName}_${managerVersionCode}-\$name.apk"/outputFileName = "SHIVKSU-NEXT_${managerVersionNameSpoofed}_${managerVersionCode}-\$name.apk"/' ./app/build.gradle.kts
+ fi
+ 
+ echo "Done."

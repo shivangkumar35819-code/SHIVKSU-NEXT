@@ -1,6 +1,6 @@
 # SHIVKSU-NEXT root compatibility
 
-The installed APK is identical to `Downloads/SHIVKSU-NEXT.apk`. Android accepts its APK signature, but the original bundled driver does not trust that certificate.
+During diagnosis, the installed APK matched the initial `Downloads/SHIVKSU-NEXT.apk` build. Android accepted its APK signature, but the original bundled driver did not trust that certificate. The replacement APK now packages the matching custom drivers described below; it has not been installed or boot-tested on the phone during this build.
 
 Confirmed from the installed APK and its extracted ARM64 android15-6.6 driver:
 
@@ -22,8 +22,12 @@ Supported build matrix: `android12-5.10`, `android13-5.10`, `android13-5.15`, `a
 
 The workflow, patch, and `custom-root/build-x86_64.sh` must be present together in the GitHub repository. Run **Build SHIVKSU-NEXT drivers** under Actions to produce `SHIVKSU-NEXT-all-supported-drivers`. Running the workflow is a build step, not a phone installation.
 
+`custom-root/manager-customization.patch` records the manager source changes against the original 3.4.2 archive, including branding, automatic custom-driver selection, unsupported-kernel checks, and installer error reporting. Copy the two ABI directories from the successful driver artifact into `manager/app/src/main/assets/custom-lkm/` before building the APK with the existing local signing key. See `ROOT-SETUP.txt` for the initial-install requirements.
+
 ## Remaining verification
 
-The custom driver has not yet been compiled or tested on the phone. After compilation, verify its build results, integrate it with the APK's patching flow, and prepare a boot-image patch from the phone's exact firmware. Identify and back up the correct partition before considering a separate flash action. A `.ko` file is not a boot image.
+All 16 custom drivers compiled and passed the GitHub Actions checks in run `39053044477`. The signed release APK was built locally. Its signature, certificate size/hash, all 16 packaged driver identities, artifact checksums, and packaged recovery script were verified. The recovery script also passed a non-executing Android shell syntax check.
+
+Device boot/root testing remains undone. Use a boot-image source from the particular phone's exact firmware, identify and back up the correct partition, and review a separate flash action before device testing. A `.ko` file is not a boot image. The final APK alone does not replace the original driver already loaded on the phone.
 
 No boot partition, module installation, root policy, or bootloader setting was changed during these checks. One temporary diagnostic file was extracted, read, and removed from `/data/local/tmp`.
