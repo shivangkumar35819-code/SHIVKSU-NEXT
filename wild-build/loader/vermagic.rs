@@ -128,8 +128,12 @@ fn write_elf64_word(
 }
 
 pub(crate) fn replace_module_vermagic(buffer: &mut Vec<u8>, required_vermagic: &str) -> Result<()> {
-    ensure!(!required_vermagic.is_empty() && required_vermagic.len() <= 512
-        && !required_vermagic.contains(['\0', '\n', '\r']), "Invalid required vermagic");
+    ensure!(
+        !required_vermagic.is_empty()
+            && required_vermagic.len() <= 512
+            && !required_vermagic.contains(['\0', '\n', '\r']),
+        "Invalid required vermagic"
+    );
 
     struct ModinfoLocation {
         offset: usize,
@@ -244,7 +248,6 @@ pub(crate) fn replace_module_vermagic(buffer: &mut Vec<u8>, required_vermagic: &
     );
     Ok(())
 }
-
 
 #[cfg(test)]
 #[path = "vermagic_tests.rs"]

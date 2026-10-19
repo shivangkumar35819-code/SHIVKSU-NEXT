@@ -5,7 +5,9 @@ use std::collections::HashMap;
 use std::fs;
 
 mod vermagic;
-use vermagic::{extract_required_vermagic, open_kmsg_at_end, read_new_kmsg, replace_module_vermagic};
+use vermagic::{
+    extract_required_vermagic, open_kmsg_at_end, read_new_kmsg, replace_module_vermagic,
+};
 
 struct Kptr {
     value: String,
@@ -76,7 +78,7 @@ pub fn load_module(data: &[u8]) -> Result<()> {
 
         let offset = elf.syms.offset() + index * Sym::size_with(elf.syms.ctx());
         let Some(real_addr) = kernel_symbols.get(name) else {
-            log::warn!("Cannot find symbol: {}", &name);
+            log::warn!("Cannot find symbol: {}", name);
             continue;
         };
         sym.st_shndx = section_header::SHN_ABS as usize;
@@ -94,7 +96,10 @@ pub fn load_module(data: &[u8]) -> Result<()> {
     match rustix::system::init_module(&buffer, c"") {
         Ok(()) => Ok(()),
         Err(first_error) => {
-            let logs = kmsg.as_mut().and_then(|file| read_new_kmsg(file).ok()).unwrap_or_default();
+            let logs = kmsg
+                .as_mut()
+                .and_then(|file| read_new_kmsg(file).ok())
+                .unwrap_or_default();
             let Some(required) = extract_required_vermagic(&logs) else {
                 log::error!("KernelSU module load failed: {first_error}; kernel log: {logs}");
                 return Err(first_error).context("init_module failed without vermagic mismatch");

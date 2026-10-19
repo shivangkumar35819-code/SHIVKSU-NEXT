@@ -36,21 +36,41 @@ fn only_this_modules_latest_mismatch_is_used() {
     let logs = "kernelsu: version magic 'old' should be 'first'\n\
         3,2,0,-;other: version magic 'old' should be 'wrong'\n\
         3,3,0,-;kernelsu: version magic 'old' should be 'required SMP'\n";
-    assert_eq!(extract_required_vermagic(logs).as_deref(), Some("required SMP"));
-    assert_eq!(extract_required_vermagic("other: version magic 'a' should be 'b'"), None);
-    assert_eq!(extract_required_vermagic("kernelsu: version magic 'bad"), None);
-    assert_eq!(extract_required_vermagic("kernelsu: version magic 'a' should be ''"), None);
+    assert_eq!(
+        extract_required_vermagic(logs).as_deref(),
+        Some("required SMP")
+    );
+    assert_eq!(
+        extract_required_vermagic("other: version magic 'a' should be 'b'"),
+        None
+    );
+    assert_eq!(
+        extract_required_vermagic("kernelsu: version magic 'bad"),
+        None
+    );
+    assert_eq!(
+        extract_required_vermagic("kernelsu: version magic 'a' should be ''"),
+        None
+    );
 }
 
 #[test]
 fn replacement_preserves_code_and_other_metadata() {
     let mut bytes = fixture();
     let original = bytes.clone();
-    for required in ["6.6.118-android15-8-device SMP preempt mod_unload modversions aarch64", "short"] {
+    for required in [
+        "6.6.118-android15-8-device SMP preempt mod_unload modversions aarch64",
+        "short",
+    ] {
         replace_module_vermagic(&mut bytes, required).unwrap();
         let elf = Elf::parse(&bytes).unwrap();
-        let section = elf.section_headers.iter().find(|s| elf.shdr_strtab.get_at(s.sh_name) == Some(".modinfo")).unwrap();
-        let data = &bytes[section.sh_offset as usize..(section.sh_offset + section.sh_size) as usize];
+        let section = elf
+            .section_headers
+            .iter()
+            .find(|s| elf.shdr_strtab.get_at(s.sh_name) == Some(".modinfo"))
+            .unwrap();
+        let data =
+            &bytes[section.sh_offset as usize..(section.sh_offset + section.sh_size) as usize];
         let entries: Vec<_> = data.split(|byte| *byte == 0).collect();
         assert!(entries.contains(&b"name=kernelsu".as_slice()));
         assert!(entries.contains(&b"license=GPL".as_slice()));
