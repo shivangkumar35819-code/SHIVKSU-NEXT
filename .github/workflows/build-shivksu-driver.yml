@@ -75,6 +75,7 @@ jobs:
           rustup target add aarch64-unknown-linux-musl aarch64-linux-android
           rustup component add rustfmt clippy
           cp config/wild-build/loader/*.rs source/userspace/ksuinit/src/
+          git -C source apply "$GITHUB_WORKSPACE/config/wild-build/daemon-lint.patch"
           cargo fmt --manifest-path source/userspace/ksuinit/Cargo.toml
           cargo fmt --manifest-path source/userspace/ksuinit/Cargo.toml -- --check
       - name: Test and lint loader
