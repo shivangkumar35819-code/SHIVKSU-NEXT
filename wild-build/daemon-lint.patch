@@ -1,12 +1,3 @@
---- a/userspace/ksud/src/sepolicy.rs
-+++ b/userspace/ksud/src/sepolicy.rs
-@@ -1,3 +1,6 @@
-+// derive-new emits explicit field initializers in generated constructors.
-+#![allow(clippy::redundant_field_names)]
-+
- use anyhow::{Context, Result, bail};
- use derive_new::new;
- use nom::{
 --- a/userspace/ksud/src/apk_sign.rs
 +++ b/userspace/ksud/src/apk_sign.rs
 @@ -81,7 +81,7 @@
@@ -18,9 +9,36 @@
      }
  
      v2_signing.ok_or_else(|| anyhow::anyhow!("No signature found!"))
+--- a/userspace/ksud/src/boot_patch.rs
++++ b/userspace/ksud/src/boot_patch.rs
+@@ -442,6 +442,8 @@
+     Ok((bootimage, bootdevice))
+ }
+ 
++// Independent command-line switches; preserve the public CLI.
++#[allow(clippy::struct_excessive_bools)]
+ #[derive(clap::Args, Debug)]
+ pub struct BootPatchArgs {
+     /// boot image path, if not specified, will try to find the boot image automatically
 --- a/userspace/ksud/src/feature.rs
 +++ b/userspace/ksud/src/feature.rs
-@@ -85,7 +85,7 @@
+@@ -1,4 +1,3 @@
+-
+ use anyhow::{Context, Result, bail};
+ use const_format::concatcp;
+ use std::collections::HashMap;
+@@ -53,9 +52,7 @@
+             Self::EnhancedSecurity => {
+                 "Enhanced Security - disable non‑KSU root elevation and unauthorized UID downgrades"
+             }
+-            Self::AvcSpoof => {
+-                "AVC Spoof - fix selinux context leak due to avc denial"
+-            }
++            Self::AvcSpoof => "AVC Spoof - fix selinux context leak due to avc denial",
+         }
+     }
+ }
+@@ -85,7 +82,7 @@
      let magic = u32::from_le_bytes(magic_buf);
  
      if magic != FEATURE_MAGIC {
@@ -64,27 +82,30 @@
          }
          Ok(())
      })?;
-@@ -245,8 +245,7 @@
+@@ -244,9 +244,7 @@
+ 
      foreach_active_module(|module| {
          if metamodule_dir.as_ref().is_some_and(|meta_dir| {
-             canonicalize(module)
+-            canonicalize(module)
 -                .map(|resolved| resolved == *meta_dir)
 -                .unwrap_or(false)
-+                .is_ok_and(|resolved| resolved == *meta_dir)
++            canonicalize(module).is_ok_and(|resolved| resolved == *meta_dir)
          }) {
              return Ok(());
          }
-@@ -319,8 +318,7 @@
+@@ -318,9 +316,8 @@
+         let module_id = module.file_name().and_then(|n| n.to_str()).unwrap_or("");
  
          // Check if this is a metamodule
-         let is_metamodule = read_module_prop(module)
+-        let is_metamodule = read_module_prop(module)
 -            .map(|props| metamodule::is_metamodule(&props))
 -            .unwrap_or(false);
-+            .is_ok_and(|props| metamodule::is_metamodule(&props));
++        let is_metamodule =
++            read_module_prop(module).is_ok_and(|props| metamodule::is_metamodule(&props));
  
          if is_metamodule {
              info!("Removing metamodule symlink");
-@@ -328,7 +326,7 @@
+@@ -328,7 +325,7 @@
                  warn!("Failed to remove metamodule symlink: {e}");
              }
          } else if let Err(e) = metamodule::exec_metauninstall_script(module_id) {
@@ -93,7 +114,7 @@
          }
  
          // Then execute module's own uninstall.sh
-@@ -757,6 +755,8 @@
+@@ -757,6 +754,8 @@
      modules
  }
  
@@ -102,6 +123,15 @@
  pub fn mount_system() -> Result<()> {
      println!("Mount system: {}", defs::MOUNT_SYSTEM);
  
+--- a/userspace/ksud/src/sepolicy.rs
++++ b/userspace/ksud/src/sepolicy.rs
+@@ -1,3 +1,6 @@
++// derive-new emits explicit field initializers in generated constructors.
++#![allow(clippy::redundant_field_names)]
++
+ use anyhow::{Context, Result, bail};
+ use derive_new::new;
+ use nom::{
 --- a/userspace/ksud/src/utils.rs
 +++ b/userspace/ksud/src/utils.rs
 @@ -105,12 +105,8 @@
@@ -131,14 +161,3 @@
          switch_cgroup("/dev/memcg/apps", pid);
      }
  }
---- a/userspace/ksud/src/boot_patch.rs
-+++ b/userspace/ksud/src/boot_patch.rs
-@@ -442,6 +442,8 @@
-     Ok((bootimage, bootdevice))
- }
- 
-+// Independent command-line switches; preserve the public CLI.
-+#[allow(clippy::struct_excessive_bools)]
- #[derive(clap::Args, Debug)]
- pub struct BootPatchArgs {
-     /// boot image path, if not specified, will try to find the boot image automatically

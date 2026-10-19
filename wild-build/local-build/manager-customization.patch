@@ -1,0 +1,132 @@
+--- a/manager/build.gradle.kts
++++ b/manager/build.gradle.kts
+@@ -11,6 +11,9 @@
+     alias(libs.plugins.lsplugin.cmaker)
+ }
+ 
++val customArm64 = providers.gradleProperty("wildCustomArm64").orNull == "true"
++val managerAbis = if (customArm64) listOf("arm64-v8a") else listOf("arm64-v8a", "x86_64")
++
+ cmaker {
+     default {
+         arguments.addAll(
+@@ -18,7 +21,7 @@
+                 "-DANDROID_STL=none",
+             )
+         )
+-        abiFilters("arm64-v8a", "x86_64")
++        abiFilters(*managerAbis.toTypedArray())
+     }
+     buildTypes {
+         if (it.name == "release") {
+@@ -35,14 +38,16 @@
+ val androidSourceCompatibility = JavaVersion.VERSION_21
+ val androidTargetCompatibility = JavaVersion.VERSION_21
+ val managerVersionCode by extra(getVersionCode())
+-val managerVersionName by extra(getVersionName())
++val managerVersionName by extra(getVersionName() + if (customArm64) "-custom" else "")
+ 
+ fun getGitCommitCount(): Int {
++    if (!rootProject.file("../.git").exists()) return 3208
+     val process = Runtime.getRuntime().exec(arrayOf("git", "rev-list", "--count", "HEAD"))
+     return process.inputStream.bufferedReader().use { it.readText().trim().toInt() }
+ }
+ 
+ fun getGitDescribe(): String {
++    if (!rootProject.file("../.git").exists()) return "v3.1.1"
+     val process = Runtime.getRuntime().exec(arrayOf("git", "describe", "--tags", "--always"))
+     return process.inputStream.bufferedReader().use { it.readText().trim() }
+ }
+@@ -71,7 +76,7 @@
+                     versionName = managerVersionName
+                 }
+                 ndk {
+-                    abiFilters += listOf("arm64-v8a", "x86_64")
++                    abiFilters += managerAbis
+                 }
+             }
+ 
+--- a/manager/app/build.gradle.kts
++++ b/manager/app/build.gradle.kts
+@@ -54,6 +54,8 @@
+         }
+         jniLibs {
+             useLegacyPackaging = true
++            // Cargo already strips this executable; preserve its embedded assets.
++            keepDebugSymbols += "**/libksud.so"
+         }
+         resources {
+             // https://stackoverflow.com/a/58956288
+@@ -101,10 +103,10 @@
+ 
+ tasks.register<Copy>("mergeScripts") {
+     into("${project.projectDir}/src/main/resources/META-INF/com/google/android")
+-    from(rootProject.file("scripts/update_binary.sh")) {
++    from(rootProject.file("../scripts/update_binary.sh")) {
+         rename { "update-binary" }
+     }
+-    from(rootProject.file("scripts/updater_script.sh")) {
++    from(rootProject.file("../scripts/updater_script.sh")) {
+         rename { "updater-script" }
+     }
+ }
+--- a/scripts/update_binary.sh
++++ b/scripts/update_binary.sh
+@@ -1,14 +1,15 @@
+ #!/bin/sh
+ 
+-TMPDIR=/dev/tmp
+-rm -rf $TMPDIR
+-mkdir -p $TMPDIR 2>/dev/null
++TMPDIR="/dev/tmp/wild-ksu-$$"
++mkdir -p /dev/tmp 2>/dev/null
++mkdir "$TMPDIR" 2>/dev/null || exit 1
++trap 'rm -rf "$TMPDIR"' EXIT
+ 
+ ARCH="$(getprop ro.product.cpu.abi)"
+ OUTFD=/proc/self/fd/$2
+ 
+ ui_print() {
+-  echo -e "ui_print $1\nui_print" >> $OUTFD
++  printf 'ui_print %s\nui_print\n' "$1" >> "$OUTFD"
+ }
+ 
+ if [ ! "$ARCH" = "arm64-v8a" ]; then
+@@ -17,27 +18,28 @@
+ fi
+ 
+ # Extract ksud and magiskboot
+-unzip -o "$3" "lib/$ARCH/libksud.so" "lib/$ARCH/libmagiskboot.so" -d $TMPDIR >&2
++unzip -o "$3" "lib/$ARCH/libksud.so" "lib/$ARCH/libmagiskboot.so" -d "$TMPDIR" >&2 || exit 1
+ 
+ KSUD="$TMPDIR/lib/$ARCH/libksud.so"
+ MAGISKBOOT="$TMPDIR/lib/$ARCH/libmagiskboot.so"
+ 
+-chmod 755 "$KSUD" "$MAGISKBOOT"
++chmod 755 "$KSUD" "$MAGISKBOOT" || exit 1
+ 
+ # use ksud to install or uninstall
+ case "$3" in
+   *uninstall*|*Uninstall*)
+     ui_print "- Uninstalling KernelSU..."
+-    "$KSUD" uninstall --magiskboot "$MAGISKBOOT" 2>&1 | while read -r line; do
+-      ui_print "$line"
+-    done
++    "$KSUD" uninstall --magiskboot "$MAGISKBOOT" > "$TMPDIR/install.log" 2>&1
++    result=$?
+     ;;
+   *)
+     ui_print "- Installing KernelSU..."
+-    "$KSUD" boot-patch --magiskboot "$MAGISKBOOT" --flash 2>&1 | while read -r line; do
+-      ui_print "$line"
+-    done
++    "$KSUD" boot-patch --magiskboot "$MAGISKBOOT" --flash > "$TMPDIR/install.log" 2>&1
++    result=$?
+     ;;
+ esac
+ 
+-true
++while IFS= read -r line; do
++  ui_print "$line"
++done < "$TMPDIR/install.log"
++exit "$result"
