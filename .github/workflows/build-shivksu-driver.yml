@@ -13,8 +13,20 @@ jobs:
   module:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        kmi:
+          - android12-5.10
+          - android13-5.10
+          - android13-5.15
+          - android14-5.15
+          - android14-6.1
+          - android15-6.6
+          - android16-6.12
     container:
-      image: ghcr.io/ylarod/ddk-min:android15-6.6-20260828
+      image: ghcr.io/ylarod/ddk-min:${{ matrix.kmi }}-20260828
       options: --privileged
     steps:
       - uses: actions/checkout@v4
@@ -28,7 +40,7 @@ jobs:
           fetch-depth: 0
           path: source
           persist-credentials: false
-      - name: Compile matching ARM64 module
+      - name: Compile matching ARM64 module (${{ matrix.kmi }})
         shell: bash
         run: |
           set -euo pipefail
@@ -41,11 +53,11 @@ jobs:
             KSU_MANAGER_PACKAGE=com.twj.wksu
           llvm-strip -d kernelsu.ko
           mkdir -p "$GITHUB_WORKSPACE/out"
-          cp kernelsu.ko "$GITHUB_WORKSPACE/out/android15-6.6_kernelsu.ko"
-          python3 "$GITHUB_WORKSPACE/config/wild-build/verify-module.py" "$ID" "$GITHUB_WORKSPACE/out/android15-6.6_kernelsu.ko"
+          cp kernelsu.ko "$GITHUB_WORKSPACE/out/${{ matrix.kmi }}_kernelsu.ko"
+          python3 "$GITHUB_WORKSPACE/config/wild-build/verify-module.py" "$ID" "$GITHUB_WORKSPACE/out/${{ matrix.kmi }}_kernelsu.ko"
       - uses: actions/upload-artifact@v4
         with:
-          name: wild-custom-module
+          name: wild-custom-module-${{ matrix.kmi }}
           path: out/
           if-no-files-found: error
 
@@ -67,7 +79,8 @@ jobs:
           persist-credentials: false
       - uses: actions/download-artifact@v4
         with:
-          name: wild-custom-module
+          pattern: wild-custom-module-*
+          merge-multiple: true
           path: module
       - name: Install Rust targets and apply loader changes
         run: |
@@ -89,9 +102,10 @@ jobs:
           LLVM_BIN="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
           export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER="$LLVM_BIN/aarch64-linux-android26-clang"
           RUSTFLAGS='-C link-arg=-no-pie' cargo build --locked --manifest-path source/userspace/ksuinit/Cargo.toml --target aarch64-unknown-linux-musl --release
-      - name: Embed custom module and loader
+      - name: Embed all supported custom modules and loader
         run: |
-          cp module/android15-6.6_kernelsu.ko source/userspace/ksud/bin/aarch64/
+          python3 config/wild-build/verify-matrix.py config/wild-build/identity.json module
+          cp module/*.ko source/userspace/ksud/bin/aarch64/
           cp source/userspace/ksuinit/target/aarch64-unknown-linux-musl/release/ksuinit source/userspace/ksud/bin/aarch64/
           mkdir -p out
           cp module/*.ko out/

@@ -3,5 +3,14 @@
   "certificate_sha256": "48d55731b637377701e89dad6f6b54a7c4582444be00648eef681ed6199ef0f2",
   "package": "com.twj.wksu",
   "kmi": "android15-6.6",
-  "abi": "arm64-v8a"
+  "abi": "arm64-v8a",
+  "supported_kmis": [
+    "android12-5.10",
+    "android13-5.10",
+    "android13-5.15",
+    "android14-5.15",
+    "android14-6.1",
+    "android15-6.6",
+    "android16-6.12"
+  ]
 }
