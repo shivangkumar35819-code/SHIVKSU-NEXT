@@ -1,0 +1,5 @@
+*.rs text eol=lf
+*.yml text eol=lf
+# Unified diffs contain intentional space-only context lines.
+*.patch text eol=lf -whitespace
+*.gz -text
