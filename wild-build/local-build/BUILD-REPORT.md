@@ -1,39 +1,38 @@
-# Wild KSU custom build verification
+# Wild KSU all-supported ARM64 build verification
 
 Date: 2026-10-20 (Asia/Calcutta)
-Source: WildKernels/Wild_KSU commit db2fc89899658a4345df3b27a34098a80cc00e2a
-Build configuration: private SHIVKSU-NEXT branch wild-ksu-custom-20261020
-Binary build run: https://github.com/shivangkumar35819-code/SHIVKSU-NEXT/actions/runs/39336619030
+Source: WildKernels/Wild_KSU db2fc89899658a4345df3b27a34098a80cc00e2a
+Build: https://github.com/shivangkumar35819-code/SHIVKSU-NEXT/actions/runs/39338310636
+Configuration branch: wild-ksu-custom-20261020, commit d744495
 
-Passed:
-- Custom ARM64 module compiled; kernel symbol/version checks passed.
-- Three loader regression tests and strict loader Clippy passed.
-- ARM64 daemon compile and Clippy passed; Rust formatting checks passed.
-- Static ARM64 init has no ELF interpreter dependency.
-- Host patcher created the image from the provided gold OS3.0.4.0.VNQINXM stock boot.
-- Unpacked patched kernel equals stock; ramdisk init/module equal the built files.
-- Downloaded binary checksums match the CI manifest.
-- Daemon compressed assets decode to the exact built loader and module.
-- Release APK built successfully and passes APK signature verification.
-- APK certificate matches module's expected certificate (794 bytes).
-- APK uses v2 signing, with no v1/v3 signature; it is not debug-key signed.
-- APK is ARM64 only and contains the exact verified daemon.
-- Recovery scripts are packaged; recovery shell syntax check passed.
+Passed checks:
+- All seven upstream ARM64 GKI module targets compiled successfully.
+- Each module has the matching package, signing certificate hash and kernel family.
+- Missing/extra module matrix guard passed; an incomplete matrix was rejected.
+- Loader regression tests, strict Clippy, static ARM64 init build and formatting passed.
+- ARM64 daemon compile and Clippy passed with all seven modules embedded.
+- Local verifier decompressed the exact built loader and all seven modules from the daemon.
+- All CI artifact checksums verified.
+- APK release build and APK signature verification passed (v2, no v1/v3, non-debug key).
+- Packaged daemon equals the verified daemon; APK is ARM64-only.
+- APK certificate uses the same persistent release key as the earlier custom build.
+- Recovery installer scripts are packaged.
+- CI gold boot image kernel equals stock, and its module/loader match the built files.
 
-No phone installation, reboot, temporary boot, flashing, or root policy changes
-were performed during this custom build. Device root/boot testing remains for
-the user. A vermagic retry cannot guarantee compatibility with every kernel ABI.
+Supported kernel KMI families:
+- android12-5.10
+- android13-5.10
+- android13-5.15
+- android14-5.15
+- android14-6.1
+- android15-6.6
+- android16-6.12
+
+These kernel families do not guarantee root on every OEM kernel or Android OS
+version. ARM32, x86, non-GKI and android17-6.18 support is not claimed.
+The included boot image is ONLY for gold OS3.0.4.0.VNQINXM; other devices and
+firmware need their own exact stock image patched with the APK.
+No phone action was performed. Device boot/root testing remains pending.
 
 APK metadata:
-package: name='com.twj.wksu' versionCode='33208' versionName='v3.1.1-custom' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
-
-Public signing identity:
-```json
-{
-  "certificate_size": 794,
-  "certificate_sha256": "48d55731b637377701e89dad6f6b54a7c4582444be00648eef681ed6199ef0f2",
-  "package": "com.twj.wksu",
-  "kmi": "android15-6.6",
-  "abi": "arm64-v8a"
-}
-```
+package: name='com.twj.wksu' versionCode='33208' versionName='v3.1.1-custom-all' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'

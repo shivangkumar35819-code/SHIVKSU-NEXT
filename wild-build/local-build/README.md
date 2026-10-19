@@ -1,10 +1,23 @@
 # Wild KSU custom release
 
-Target: ARM64 / android15-6.6 only. Android package: com.twj.wksu.
+Architecture: ARM64 only. Android package: com.twj.wksu.
 This is a personal build, not an official WildKernels-signed release.
 
-The module trusts the exact certificate in manager-cert.der and identity.json.
-The APK daemon embeds that module and the rebuilt ksuinit. The loader retries
+Supported upstream Wild KSU 3.1.1 GKI kernel families:
+
+- android12-5.10
+- android13-5.10
+- android13-5.15
+- android14-5.15
+- android14-6.1
+- android15-6.6
+- android16-6.12
+
+These are kernel KMI families, not a promise about every Android OS version or
+OEM kernel. ARM32, x86, non-GKI, 4.x/5.4, and android17-6.18 are not supported.
+
+Each module trusts the exact certificate in manager-cert.der and identity.json.
+The APK daemon embeds all seven modules and the rebuilt ksuinit. The loader retries
 once only if a new kernelsu kernel log explicitly reports a vermagic mismatch.
 Other errors still fail. Changing vermagic does not prove kernel ABI compatibility.
 
@@ -15,10 +28,12 @@ init with the built binaries. No allow-shell or unauthenticated-adbd option is s
 
 For a different boot image, install the custom APK, choose the stock image for
 that exact firmware, and use the patch-file option. Its rebuilt daemon selects
-the matching bundled android15-6.6 module. This build does not support other KMIs.
+the matching bundled module for the detected or explicitly selected kernel KMI.
+Unsupported KMIs fail before an image can be produced with a missing module.
 Do not reuse the previous official/debug APK with this custom module.
 
-Before installing this APK, an APK signed with a different key under the same
+The signing key is unchanged from the previous custom ARM64 build, so this APK
+can update that custom build. Before installing over an APK signed with a different key under the same
 package must be uninstalled; that removes its local Manager settings.
 
 The .ko file is a kernel module, not a boot image. It must not be flashed directly.

@@ -22,14 +22,14 @@ for line in (binaries / "SHA256SUMS").read_text().splitlines():
     expected, filename = line.split(maxsplit=1)
     assert hashlib.sha256((binaries / filename.strip()).read_bytes()).hexdigest() == expected
 assert json.loads((binaries / "identity.json").read_text()) == identity
-subprocess.run(["python", str(root / "custom-root/verify-module.py"),
-                str(root / "custom-root/identity.json"),
-                str(binaries / "android15-6.6_kernelsu.ko")], check=True)
+subprocess.run(["python", str(root / "custom-root/verify-matrix.py"),
+                str(root / "custom-root/identity.json"), str(binaries)], check=True)
 
 # Verify RustEmbed really contains these exact built files, not upstream assets.
 daemon = (binaries / "libksud.so").read_bytes()
+assert daemon[:4] == b"\x7fELF" and struct.unpack_from("<H", daemon, 18)[0] == 183
 expected_assets = {name: (binaries / name).read_bytes()
-                   for name in ["ksuinit", "android15-6.6_kernelsu.ko"]}
+                   for name in ["ksuinit", *[kmi + "_kernelsu.ko" for kmi in identity["supported_kmis"]]]}
 init = expected_assets["ksuinit"]
 assert init[:4] == b"\x7fELF" and struct.unpack_from("<HH", init, 16) == (2, 183)
 program_offset = struct.unpack_from("<Q", init, 32)[0]
@@ -74,10 +74,10 @@ for directory in ["manager", "scripts"]:
                     ignore=shutil.ignore_patterns("build", ".gradle", ".kotlin", ".cxx",
                                                  "local.properties", "*.jks", "*.keystore"))
 with (root / ".build-tools/custom-release.log").open("w") as log:
-    subprocess.run(["cmd.exe", "/c", "gradlew.bat", "assembleRelease", "-PwildCustomArm64=true",
+    subprocess.run(["cmd.exe", "/c", "gradlew.bat", "assembleRelease", "-PwildCustomArm64=true", "-PwildAllKernels=true",
                     "--console=plain"], cwd=worktree / "manager", env=env,
                    stdout=log, stderr=subprocess.STDOUT, check=True)
-apk = worktree / "manager/app/build/outputs/apk/release/Wild_KSU_v3.1.1-custom_33208-release.apk"
+apk = worktree / "manager/app/build/outputs/apk/release/Wild_KSU_v3.1.1-custom-all_33208-release.apk"
 signer = Path(env["ANDROID_HOME"]) / "build-tools/36.1.0/apksigner.bat"
 result = subprocess.run(["cmd.exe", "/c", str(signer), "verify", "--verbose", "--print-certs", str(apk)],
                         env=env, capture_output=True, text=True, check=True)
@@ -91,7 +91,7 @@ with zipfile.ZipFile(apk) as archive:
     assert all(not name.startswith("lib/") or name.startswith("lib/arm64-v8a/") for name in archive.namelist())
     assert archive.read("META-INF/com/google/android/update-binary")
     assert archive.read("META-INF/com/google/android/updater-script")
-dist = root / "dist/Wild-KSU-custom-arm64-android15-6.6"
+dist = root / "dist/Wild-KSU-custom-all-supported-arm64"
 dist.mkdir(parents=True, exist_ok=True)
 for item in binaries.iterdir():
     if item.is_file():

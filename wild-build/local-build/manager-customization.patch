@@ -1,16 +1,17 @@
 --- a/manager/build.gradle.kts
 +++ b/manager/build.gradle.kts
-@@ -11,6 +11,9 @@
+@@ -11,6 +11,10 @@
      alias(libs.plugins.lsplugin.cmaker)
  }
  
 +val customArm64 = providers.gradleProperty("wildCustomArm64").orNull == "true"
++val customAllKernels = providers.gradleProperty("wildAllKernels").orNull == "true"
 +val managerAbis = if (customArm64) listOf("arm64-v8a") else listOf("arm64-v8a", "x86_64")
 +
  cmaker {
      default {
          arguments.addAll(
-@@ -18,7 +21,7 @@
+@@ -18,7 +22,7 @@
                  "-DANDROID_STL=none",
              )
          )
@@ -19,12 +20,16 @@
      }
      buildTypes {
          if (it.name == "release") {
-@@ -35,14 +38,16 @@
+@@ -35,14 +39,20 @@
  val androidSourceCompatibility = JavaVersion.VERSION_21
  val androidTargetCompatibility = JavaVersion.VERSION_21
  val managerVersionCode by extra(getVersionCode())
 -val managerVersionName by extra(getVersionName())
-+val managerVersionName by extra(getVersionName() + if (customArm64) "-custom" else "")
++val managerVersionName by extra(getVersionName() + when {
++    customAllKernels -> "-custom-all"
++    customArm64 -> "-custom"
++    else -> ""
++})
  
  fun getGitCommitCount(): Int {
 +    if (!rootProject.file("../.git").exists()) return 3208
@@ -37,7 +42,7 @@
      val process = Runtime.getRuntime().exec(arrayOf("git", "describe", "--tags", "--always"))
      return process.inputStream.bufferedReader().use { it.readText().trim() }
  }
-@@ -71,7 +76,7 @@
+@@ -71,7 +81,7 @@
                      versionName = managerVersionName
                  }
                  ndk {

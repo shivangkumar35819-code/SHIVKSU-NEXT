@@ -1,6 +1,6 @@
 # Wild KSU custom build (separate from SHIVKSU-NEXT main)
 
-This branch builds Wild KSU 3.1.1 for ARM64 / android15-6.6 with the public
+This branch builds Wild KSU 3.1.1 for all seven upstream ARM64 GKI families with the public
 identity in identity.json. Main remains the previous KernelSU-Next setup.
 
 The signing key is only on the user's PC under .android/wild-ksu-release.
@@ -20,7 +20,7 @@ To reproduce the local Manager build from the original Wild KSU 3.1.1 source:
 
 1. Apply local-build/manager-customization.patch to the source root.
 2. Copy local-build/build-release.py, manager-cert.der, README.md and this
-   directory's identity.json and verify-module.py into source/custom-root/.
+   directory's identity.json, verify-module.py and verify-matrix.py into source/custom-root/.
 3. Download wild-custom-release-binaries from the successful Actions run.
 4. Restore the existing local signing directory if using a different PC.
 5. Run build-release.py --binaries ARTIFACT_DIR --java-home JAVA_21_HOME.
@@ -33,3 +33,14 @@ APK signature schemes, package/ABI setup and recovery script packaging.
 
 No workflow installs, reboots or flashes the phone. Device root testing remains
 for the user. The standalone .ko file is not a flashable boot image.
+
+Current supported matrix:
+- android12-5.10
+- android13-5.10
+- android13-5.15
+- android14-5.15
+- android14-6.1
+- android15-6.6
+- android16-6.12
+
+APK verification checks all seven embedded drivers. This is not universal OEM or x86 support.
