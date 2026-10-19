@@ -78,6 +78,8 @@ jobs:
           git -C source apply "$GITHUB_WORKSPACE/config/wild-build/daemon-lint.patch"
           cargo fmt --manifest-path source/userspace/ksuinit/Cargo.toml
           cargo fmt --manifest-path source/userspace/ksuinit/Cargo.toml -- --check
+          cargo fmt --manifest-path source/userspace/ksud/Cargo.toml
+          cargo fmt --manifest-path source/userspace/ksud/Cargo.toml -- --check
       - name: Test and lint loader
         run: |
           cargo test --locked --manifest-path source/userspace/ksuinit/Cargo.toml --lib
@@ -134,3 +136,8 @@ jobs:
         with:
           name: wild-formatted-loader
           path: source/userspace/ksuinit/src/*.rs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wild-formatted-daemon
+          path: source/userspace/ksud/src/

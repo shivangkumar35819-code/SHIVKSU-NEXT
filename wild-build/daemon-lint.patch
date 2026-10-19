@@ -7,6 +7,17 @@
  use anyhow::{Context, Result, bail};
  use derive_new::new;
  use nom::{
+--- a/userspace/ksud/src/apk_sign.rs
++++ b/userspace/ksud/src/apk_sign.rs
+@@ -81,7 +81,7 @@
+     }
+ 
+     if v3_signing_exist || v3_1_signing_exist {
+-        return Err(anyhow::anyhow!("Unexpected v3 signature found!",));
++        return Err(anyhow::anyhow!("Unexpected v3 signature found!"));
+     }
+ 
+     v2_signing.ok_or_else(|| anyhow::anyhow!("No signature found!"))
 --- a/userspace/ksud/src/feature.rs
 +++ b/userspace/ksud/src/feature.rs
 @@ -85,7 +85,7 @@
@@ -108,17 +119,18 @@
      log::info!("safemode: {safemode}");
      if safemode {
          return true;
-@@ -161,9 +157,7 @@
+@@ -161,10 +157,7 @@
      switch_cgroup("/dev/cg2_bpf", pid);
      switch_cgroup("/sys/fs/cgroup", pid);
  
 -    if getprop("ro.config.per_app_memcg")
 -        .filter(|prop| prop == "false")
 -        .is_none()
-+    if getprop("ro.config.per_app_memcg").is_none_or(|prop| prop != "false")
-     {
+-    {
++    if getprop("ro.config.per_app_memcg").is_none_or(|prop| prop != "false") {
          switch_cgroup("/dev/memcg/apps", pid);
      }
+ }
 --- a/userspace/ksud/src/boot_patch.rs
 +++ b/userspace/ksud/src/boot_patch.rs
 @@ -442,6 +442,8 @@
