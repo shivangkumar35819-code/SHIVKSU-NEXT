@@ -47,6 +47,9 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = true
+            // ksud is a release executable, packaged as .so for Android extraction.
+            // Preserve its published bytes and embedded boot/module assets.
+            keepDebugSymbols += "**/libksud.so"
         }
         resources {
             // https://stackoverflow.com/a/58956288
