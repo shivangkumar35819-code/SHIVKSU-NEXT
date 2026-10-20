@@ -10,12 +10,12 @@ jobs:
   manager:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
       - name: Install Android toolchain
         run: sdkmanager 'platforms;android-36' 'build-tools;36.1.0' 'ndk;29.0.14206865'
       - name: Require matching release signing key
@@ -34,7 +34,7 @@ jobs:
         run: bash gradlew assembleRelease --console=plain
       - name: Verify signing identity and all 16 drivers
         run: python3 tools/verify-root-apk.py manager/app/build/outputs/apk/release/SHIVKSU_NEXT_v3.4.2-shiv.1_33356-release.apk manager/app/src/main/assets/custom-lkm
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: SHIVKSU-NEXT-APK
           path: manager/app/build/outputs/apk/release/*.apk
