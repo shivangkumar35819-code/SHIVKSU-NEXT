@@ -1,0 +1,14 @@
+{
+  "arm64-v8a": {
+    "sha256": "2771a2ae989b522b5d70f3288ad5a2f379488962d09c1fe11e13a745eba89362",
+    "release": "https://github.com/KernelSU-Next/KernelSU-Next/releases/tag/v3.4.2"
+  },
+  "riscv64": {
+    "sha256": "5bb5b71bdb91f79fdf7f1fccf252efae5806dd1f940081b2eae3098845c4fce5",
+    "release": "https://github.com/KernelSU-Next/KernelSU-Next/releases/tag/v3.4.2"
+  },
+  "x86_64": {
+    "sha256": "6f01d6277d1675c617c9ee8b8d21f907075555e0a0ae724c04d42bc21dae8f89",
+    "release": "https://github.com/KernelSU-Next/KernelSU-Next/releases/tag/v3.4.2"
+  }
+}

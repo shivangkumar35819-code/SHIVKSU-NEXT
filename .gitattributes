@@ -1,0 +1,6 @@
+*.bat eol=crlf
+*.sh text eol=lf
+*.patch text eol=lf
+gradlew text eol=lf
+*.ko binary
+*.so binary
